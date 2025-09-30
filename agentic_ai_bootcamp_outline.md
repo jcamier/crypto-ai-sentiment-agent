@@ -8,7 +8,7 @@
 
 **Capstone:** Dashboard with trends per token (BTC, ETH, SOL) deployed on AWS with full observability.
 
-**Prequesites:** Familiarity with LLM's, software development, coding (Javascript & Python used in course), Git, an AWS account.
+**Prerequisite:** Familiarity with LLM's, software development, coding (Javascript & Python used in course), Git, an AWS account.
 
 ## Format
 - **Morning:** principles + live demo
