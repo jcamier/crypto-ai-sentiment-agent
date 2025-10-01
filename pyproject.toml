@@ -7,7 +7,7 @@ name = "crypto-sentiment-agent"
 version = "0.1.0"
 description = "Crypto News & Sentiment Agent for Agentic AI Bootcamp"
 authors = [
-    {name = "Kainos Systems", email = "training@kainos.com"},
+    {name = "Kainos Systems"},
 ]
 readme = "README.md"
 requires-python = ">=3.11"
