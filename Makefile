@@ -19,6 +19,7 @@ help:
 	@echo "  shell        - Shell into crypto-agent container"
 	@echo "  process-s3   - Process S3 PDFs and store in database"
 	@echo "  fetch-coingecko - Fetch latest crypto news from CoinGecko API"
+	@echo "  analyze-sentiment - Analyze sentiment for all articles using Bedrock"
 	@echo "  test-api     - Test API endpoints"
 	@echo ""
 	@echo "Python dependency management (uv):"
@@ -49,15 +50,15 @@ setup: init-db setup-pgvector
 
 # Initialize database
 init-db:
-	docker compose exec crypto-agent python -c "from src.database import init_db; init_db()"
+	docker compose exec crypto-agent bash -c "cd /app && python -c 'from src.database import init_db; init_db()'"
 
 # Setup pgvector extension
 setup-pgvector:
-	docker compose exec crypto-agent python -c "from src.database import setup_pgvector; setup_pgvector()"
+	docker compose exec crypto-agent bash -c "cd /app && python -c 'from src.database import setup_pgvector; setup_pgvector()'"
 
 # Run tests
 test:
-	docker compose exec crypto-agent python -m pytest
+	docker compose exec crypto-agent bash -c "cd /app && python -m pytest tests/ -v"
 
 # Clean up
 clean:
@@ -90,7 +91,11 @@ process-s3:
 
 # Fetch latest crypto news from CoinGecko API
 fetch-coingecko:
-	docker compose exec crypto-agent python -c "from src.services.coingecko_service import fetch_latest_news; fetch_latest_news()"
+	docker compose exec crypto-agent python -c "import asyncio; from src.services.coingecko_service import fetch_latest_news; asyncio.run(fetch_latest_news())"
+
+# Analyze sentiment for all articles
+analyze-sentiment:
+	docker compose exec crypto-agent python -c "from src.services.sentiment_analyzer import analyze_all_articles; analyze_all_articles()"
 
 # Run FastAPI development server locally
 run-local:

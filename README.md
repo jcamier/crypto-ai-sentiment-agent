@@ -1,41 +1,161 @@
-# Crypto AI Sentiment Agent
+# Crypto News & Sentiment Agent
 
-### An Agentic Workflow for Crypto News Sentiment Project Bootcamp
+### An Agentic AI Workflow for Crypto News Sentiment Analysis
 
-## Five-Day Bootcamp Overview
-📋 **[View Detailed Bootcamp Outline](agentic_ai_bootcamp_outline.md)** - Complete curriculum with tools, builds, and discussions
-📋 **[View Day 1 Specification](spec-day-1.md)** - Detailed requirements and setup for Day 1
+## 🚀 Quick Start
 
-- **Day 1**: Build crypto news fetcher agent with local LLM and Docker containers
+### Prerequisites
+- AWS Account with Bedrock access
+- CoinGecko API key (free tier)
+- Docker and Docker Compose
+- Python 3.11+
+
+### 1. Setup Environment
+```bash
+# Copy environment template
+cp env.example .env
+
+# Edit .env with your credentials:
+# - AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+# - S3_BUCKET_NAME (your own bucket)
+# - COINGECKO_API_KEY
+```
+
+### 2. Test Setup
+```bash
+# Run setup test to verify configuration
+python test_setup.py
+```
+
+### 3. Start Services
+```bash
+# Start Docker containers
+make up
+
+# Initialize database
+make setup
+
+# Process S3 PDFs (15 crypto news articles)
+make process-s3
+
+# Fetch live news from CoinGecko
+make fetch-coingecko
+
+# Analyze sentiment using Amazon Bedrock
+make analyze-sentiment
+
+# Test API endpoints
+make test-api
+```
+
+## 📊 API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Service information and available endpoints |
+| `/health` | GET | Health check for Docker |
+| `/api/news/` | GET | Get news articles with filtering |
+| `/api/sentiment/` | GET | Get sentiment analysis results |
+| `/api/stats/` | GET | Database statistics |
+| `/api/process/s3/` | POST | Process S3 PDFs |
+| `/api/fetch/live/` | POST | Fetch live news from CoinGecko |
+| `/api/analyze/sentiment/` | POST | Analyze sentiment for articles |
+
+### Example API Usage
+```bash
+# Get all news articles
+curl http://localhost:8000/api/news/
+
+# Get bullish sentiment articles only
+curl "http://localhost:8000/api/news/?sentiment=bullish"
+
+# Get articles mentioning BTC
+curl "http://localhost:8000/api/news/?token=BTC"
+
+# Get sentiment analysis for BTC
+curl "http://localhost:8000/api/sentiment/?token=BTC"
+```
+
+## 🏗️ Architecture
+
+- **FastAPI**: Web framework and REST API
+- **PostgreSQL + pgvector**: Database with vector support for future embeddings
+- **Amazon Bedrock**: LLM service for sentiment analysis (Claude 3 Haiku)
+- **Docker**: Containerized deployment
+- **boto3**: AWS SDK for S3 and Bedrock integration
+- **CoinGecko API**: Live crypto news data
+
+## 📁 Project Structure
+
+```
+src/
+├── main.py                 # FastAPI application
+├── database.py            # Database configuration
+├── models.py              # SQLAlchemy models
+└── services/
+    ├── s3_processor.py    # S3 PDF processing
+    ├── coingecko_service.py # CoinGecko API integration
+    └── sentiment_analyzer.py # Bedrock sentiment analysis
+```
+
+## 🔧 Development Commands
+
+```bash
+# Development
+make install    # Install Python dependencies
+make lint       # Run code linting
+make format     # Format code with black/isort
+make test       # Run tests
+
+# Docker operations
+make up         # Start services
+make down       # Stop services
+make build      # Build images
+make logs       # View logs
+make shell      # Shell into container
+
+# Data processing
+make process-s3      # Process S3 PDFs
+make fetch-coingecko # Fetch live news
+make analyze-sentiment # Run sentiment analysis
+```
+
+## 📋 Five-Day Bootcamp Overview
+
+📋 **[View Detailed Bootcamp Outline](agentic_ai_bootcamp_outline.md)** - Complete curriculum
+📋 **[View Day 1 Specification](spec-day-1.md)** - Detailed Day 1 requirements
+
+- **Day 1**: ✅ Build crypto news fetcher agent with Docker containers
 - **Day 2**: Set up AWS infrastructure with CI/CD pipeline using GitHub Actions and Terraform
 - **Day 3**: Implement embeddings, sentiment analysis, and observability with Prometheus/Grafana
 - **Day 4**: Migrate to Amazon Bedrock with guardrails, retry logic, and evaluation harness
 - **Day 5**: Deploy production dashboard with CloudFront and complete crypto sentiment trends
 
----
-### Crypto Market URL: https://coinmarketcap.com/
----
+## 🎯 Day 1 Success Criteria
 
-### Sources: Crypto News Articles (BTC, ETH, USDT, SOL, FDUSD)
-as of September 30th, 2025
+- [x] Successfully download and process all 15 PDFs from S3 bucket
+- [x] Create FastAPI service with CoinGecko integration
+- [x] Parse and structure news data correctly (PDFs + API responses)
+- [x] Perform sentiment analysis using Amazon Bedrock
+- [x] Store data in PostgreSQL database
+- [x] Run entire stack with `docker compose up`
+- [x] Handle basic error cases (S3 failures, API rate limits, database connection issues)
 
-Below is a table of 15 recent articles covering Bitcoin (BTC), Ethereum (ETH), Tether (USDT), Solana (SOL), and First Digital USD (FDUSD), sourced from reputable crypto news outlets. The articles focus on market analysis, price updates, and key developments. Links are provided for proper attribution to the original sources.
+## 📰 News Sources
 
-| #  | Title | Link | Primary Coverage | Publish Date |
-|----|-------|------|------------------|--------------|
-| 1  | Bitcoin Surges Above $114K as Traders Look Ahead to 'Uptober' | [CoinDesk](https://www.coindesk.com/markets/2025/09/29/bitcoin-above-usd114k-amid-shutdown-uncertainty-october-could-offer-relief) | BTC | Sep 29, 2025 |
-| 2  | Bitcoin Rally Pushes Crypto Into Green for September, But Alts Are... | [Decrypt](https://decrypt.co/342321/bitcoin-crypto-green-september-altcoin-price-analysis) | BTC | Sep 30, 2025 |
-| 3  | Price Predictions 9/26: BTC, ETH, XRP, BNB, SOL, DOGE, ADA, HYPE, LINK, AVAX | [Cointelegraph](https://cointelegraph.com/news/price-predictions-9-26-btc-eth-xrp-bnb-sol-doge-ada-hype-link-avax) | BTC, ETH, SOL | Sep 26, 2025 |
-| 4  | ETH Falls as Crypto, Stocks Correct, but $547M Spot ETF Inflows Show... | [Cointelegraph](https://cointelegraph.com/news/eth-drops-as-crypto-stocks-correct-dollar547m-in-spot-etf-inflows-may-save-the-day) | ETH | Sep 30, 2025 |
-| 5  | Price Predictions 9/24: BTC, ETH, XRP, BNB, SOL, DOGE, ADA, HYPE, LINK, AVAX | [Cointelegraph](https://cointelegraph.com/news/price-predictions-9-24-btc-eth-xrp-bnb-sol-doge-ada-hype-link-avax) | BTC, ETH, SOL | Sep 24, 2025 |
-| 6  | Tether Moves 8,888 BTC Worth $1 Billion Into Bitcoin Reserve Wallet | [The Block](https://www.theblock.co/post/372898/tether-8888-btc-bitcoin-reserve-wallet) | USDT, BTC | Sep 30, 2025 |
-| 7  | Tether (USDT) Adds 8,889 BTC to Holdings | [CoinDesk](https://www.coindesk.com/business/2025/09/30/tether-adds-usd1b-in-bitcoin-to-reserves-as-usdt-supply-nears-usd175b-blockchain-data-shows) | USDT | Sep 30, 2025 |
-| 8  | Liquidity Signals Strengthen as Binance Receives $200M USDT | [CCN](https://www.ccn.com/news/crypto/liquidity-signals-strengthen-as-binance-receives-200m-usdt-whale-inflow/) | USDT | Sep 30, 2025 |
-| 9  | SOL Slips Below $200, but ETF Verdict Could Trigger 'Institutional Moment' for New Highs | [Cointelegraph](https://cointelegraph.com/news/sol-slips-below-dollar200-but-etf-verdict-could-be-institutional-moment-for-new-highs) | SOL | Sep 25, 2025 |
-| 10 | The Daily: Visa Pilots Stablecoin Payments, Bloomberg's LTC, SOL... | [The Block](https://www.theblock.co/post/372933/the-daily-visa-pilots-stablecoin-payments-bloombergs-ltc-sol-and-xrp-etf-approval-odds-hit-100-and-more) | SOL | Sep 30, 2025 |
-| 11 | Crypto Wallet Phantom Unveils Stablecoin and Payments Service | [Decrypt](https://decrypt.co/342305/crypto-wallet-phantom-unveils-stablecoin-payments) | SOL (Phantom ecosystem) | Sep 30, 2025 |
-| 12 | Latest First Digital USD (FDUSD) News Update | [CoinMarketCap](https://coinmarketcap.com/cmc-ai/first-digital-usd/latest-updates/) | FDUSD | Sep 27, 2025 |
-| 13 | First Digital USD (FDUSD) Price Prediction For 2025 & Beyond | [CoinMarketCap](https://coinmarketcap.com/cmc-ai/first-digital-usd/price-prediction/) | FDUSD | Sep 30, 2025 |
-| 14 | [LIVE] Crypto News Today, September 30 – Bitcoin Price Above... | [Yahoo Finance](https://finance.yahoo.com/news/live-crypto-news-today-september-085754926.html) | BTC, ETH | Sep 30, 2025 |
-| 15 | Price Predictions 9/5: BTC, ETH, XRP, BNB, SOL, DOGE, ADA, LINK, HYPE, SUI | [Cointelegraph](https://cointelegraph.com/news/price-predictions-9-5-btc-eth-xrp-bnb-sol-doge-ada-link-hype-sui) | BTC, ETH, SOL | Sep 5, 2025 |
+The project processes 15 crypto news articles from September 2025, covering:
+- **Bitcoin (BTC)**: Price analysis, market trends, ETF developments
+- **Ethereum (ETH)**: Price movements, ETF inflows, market corrections
+- **Tether (USDT)**: Reserve management, liquidity signals
+- **Solana (SOL)**: ETF prospects, ecosystem developments
+- **First Digital USD (FDUSD)**: Price predictions, market outlook
+
+Sources include CoinDesk, Decrypt, Cointelegraph, The Block, CCN, and CoinMarketCap.
+
+## 🔒 Security Notes
+
+- Never commit `.env` files to version control
+- Use IAM roles with least-privilege access
+- Configure CORS appropriately for production
+- Consider using AWS Secrets Manager for production deployments
 
