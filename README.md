@@ -3,6 +3,8 @@
 ### An Agentic Workflow for Crypto News Sentiment Project Bootcamp
 
 ## Five-Day Bootcamp Overview
+📋 **[View Detailed Bootcamp Outline](agentic_ai_bootcamp_outline.md)** - Complete curriculum with tools, builds, and discussions
+
 - **Day 1**: Build crypto news fetcher agent with local LLM and Docker containers
 - **Day 2**: Set up AWS infrastructure with CI/CD pipeline using GitHub Actions and Terraform
 - **Day 3**: Implement embeddings, sentiment analysis, and observability with Prometheus/Grafana
