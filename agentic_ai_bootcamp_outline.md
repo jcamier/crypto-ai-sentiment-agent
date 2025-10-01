@@ -20,6 +20,11 @@
 
 ## Day 1 – Foundations & Crypto News Integration
 **Tools & Free Options:**
+- Using AI-native coding tools (Cursor, Claude Code, Opencode.ai)
+    - https://cursor.com/
+    - https://opencode.ai/
+    - https://claude.com/product/claude-code
+- Spec-Driven AI Development
 - **LLMs**: Local Ollama models (llama3.2:latest) for development, prepare for Amazon Bedrock migration.
 - **Containers**: Docker & Docker Compose (all services run locally).
 - **Code Hosting**: GitHub free accounts.
