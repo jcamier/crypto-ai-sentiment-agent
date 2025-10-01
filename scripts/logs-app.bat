@@ -1,0 +1,3 @@
+@echo off
+echo Showing logs from crypto-agent service...
+docker compose logs -f crypto-agent
