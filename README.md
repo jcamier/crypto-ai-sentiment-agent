@@ -1,10 +1,12 @@
 # Crypto AI Sentiment Agent
-- An Agentic Workflow for Crypto News Sentiment
 
+### An Agentic Workflow for Crypto News Sentiment Project Bootcamp
 
-Handy URL Link for Crypto: https://coinmarketcap.com/
+---
+### Crypto Market URL: https://coinmarketcap.com/
+---
 
-# Crypto News Articles (BTC, ETH, USDT, SOL, FDUSD)
+### Sources: Crypto News Articles (BTC, ETH, USDT, SOL, FDUSD)
 as of September 30th, 2025
 
 Below is a table of 15 recent articles covering Bitcoin (BTC), Ethereum (ETH), Tether (USDT), Solana (SOL), and First Digital USD (FDUSD), sourced from reputable crypto news outlets. The articles focus on market analysis, price updates, and key developments. Links are provided for proper attribution to the original sources.
