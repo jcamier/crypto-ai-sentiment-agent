@@ -28,15 +28,18 @@
 - **LLMs**: Local Ollama models (llama3.2:latest) for development, prepare for Amazon Bedrock migration.
 - **Containers**: Docker & Docker Compose (all services run locally).
 - **Code Hosting**: GitHub free accounts.
-- **APIs**: CoinGecko API (free tier), CryptoPanic API, or NewsAPI for crypto news.
+- **APIs**: CoinGecko API (free tier) for live data + S3 bucket for reproducible testing
     - https://docs.coingecko.com/
+- **AWS Integration**: boto3 for S3 access to crypto news PDFs
+- **Web Framework**: FastAPI for API service development
 
 
 **Build:** "Crypto News Fetcher Agent" in a Docker container that:
-- Fetches latest crypto news from public APIs (BTC, ETH, SOL focus)
-- Parses and structures news data
+- Downloads and processes 15 crypto news PDFs from S3 bucket (reproducible testing)
+- Creates FastAPI service to fetch latest crypto news from CoinGecko API (real-time data)
+- Parses and structures news data from both sources
 - Basic sentiment classification using local LLM
-- Stores raw data in S3 that will be vectorized in local Postgres container
+- Stores processed data in local Postgres container
 
 **Discussion:** API rate limits, data quality, and what happens in production when scaling, auth, and retries are needed.
 
