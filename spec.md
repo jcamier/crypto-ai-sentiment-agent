@@ -42,11 +42,11 @@ We're using **two data sources** (S3 PDFs + CoinGecko API) to give you the best 
 
 ### Technical Stack
 - **Language**: Python
-- **LLM**: Local Ollama (llama3.2:latest)
+- **LLM**: Amazon Bedrock (Claude 3 Haiku - cost-effective)
 - **Database**: PostgreSQL (Docker container)
 - **Containerization**: Docker & Docker Compose
 - **Web Framework**: FastAPI for API service
-- **AWS Integration**: boto3 for S3 access
+- **AWS Integration**: boto3 for S3 access and Bedrock
 - **APIs**: CoinGecko API (live data) + S3 bucket (reproducible testing)
 
 ### Data Sources
@@ -60,7 +60,7 @@ We're using **two data sources** (S3 PDFs + CoinGecko API) to give you the best 
 
 ### Database Schema
 ```sql
--- News articles table
+-- News articles table (Day 1)
 CREATE TABLE news_articles (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
@@ -71,8 +71,12 @@ CREATE TABLE news_articles (
     tokens_mentioned TEXT[], -- Array of crypto tokens mentioned
     sentiment VARCHAR(20), -- bullish, bearish, neutral
     confidence_score FLOAT,
+    s3_bucket_source VARCHAR(255), -- S3 bucket where article was sourced from
+    s3_key_source VARCHAR(500), -- S3 key/path of the source file
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Note: Vector embeddings will be added in Day 3 with pgvector extension
 ```
 
 ### API Integration
@@ -83,31 +87,65 @@ CREATE TABLE news_articles (
 - **Error Handling**: Graceful fallback between S3 and live API sources
 
 ### Sentiment Analysis
-- Use local Ollama model for sentiment classification
+- Use Amazon Bedrock (Claude 3 Haiku) for sentiment classification
 - Classify each article as: bullish, bearish, or neutral
 - Include confidence score (0.0 to 1.0)
 - Extract mentioned crypto tokens from article content
 
 ### Docker Setup
 - **Container 1**: Python application (S3 fetcher + FastAPI + sentiment analysis)
-- **Container 2**: PostgreSQL database
+- **Container 2**: PostgreSQL database with pgvector extension (cost-effective vs AWS RDS)
 - **Docker Compose**: Orchestrate both containers
-- **Environment variables**: AWS credentials, CoinGecko API key, database connection strings
+- **Environment variables**: AWS credentials, CoinGecko API key, database connection strings, S3 bucket configuration
+
+### Environment Configuration
+Create `.env` file with the following variables:
+```bash
+# Database Configuration
+DB_NAME=crypto_news
+DB_USER=user
+DB_PASS=password
+DB_HOST=postgres
+
+# AWS Configuration
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_DEFAULT_REGION=us-east-1
+
+# S3 Configuration (Student's own bucket)
+S3_BUCKET_NAME=your-student-bucket-name
+S3_BUCKET_REGION=us-east-1
+
+# CoinGecko API
+COINGECKO_API_KEY=your_api_key_here
+
+# Amazon Bedrock Configuration
+AWS_BEDROCK_REGION=us-east-1
+BEDROCK_MODEL_ID=anthropic.claude-3-haiku-20240307-v1:0
+BEDROCK_EMBEDDING_MODEL_ID=amazon.titan-embed-text-v1
+```
 
 ### Success Criteria
 - [ ] Successfully download and process all 15 PDFs from S3 bucket
 - [ ] Create FastAPI service with CoinGecko integration
 - [ ] Parse and structure news data correctly (PDFs + API responses)
-- [ ] Perform sentiment analysis using local LLM
+- [ ] Perform sentiment analysis using Amazon Bedrock
 - [ ] Store data in PostgreSQL database
 - [ ] Run entire stack with `docker compose up`
 - [ ] Handle basic error cases (S3 failures, API rate limits, database connection issues)
 
 ### Deliverables
-- Working Docker Compose setup
+- Working Docker Compose setup with PostgreSQL + pgvector
 - Python application with S3 PDF processing and FastAPI service
-- PostgreSQL database with proper schema
+- PostgreSQL database with proper schema (including S3 source tracking)
+- Environment configuration files (.env.example and .env)
 - Basic logging and error handling
 - README with setup instructions
 - Test suite for S3 PDF processing (reproducible results)
+
+### Storage Strategy
+- **Local PostgreSQL**: Dockerized Postgres with pgvector extension (cost-effective vs AWS RDS)
+- **S3 Source Tracking**: Store S3 bucket and key information for each article
+- **Future-Ready**: Schema prepared for vector embeddings (Day 3)
+- **Student Buckets**: Each student uses their own S3 bucket for data storage
 
