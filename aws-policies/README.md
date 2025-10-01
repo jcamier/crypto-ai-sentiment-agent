@@ -13,8 +13,9 @@ This folder contains the IAM policies required for the crypto sentiment agent to
 - Invoke Bedrock models (Claude Haiku and Titan Embeddings)
 
 **Usage:**
-1. Replace `YOUR_STUDENT_BUCKET_NAME` with your actual bucket name
-2. Attach this policy to your IAM user
+1. Create your S3 bucket first (e.g., `your-name-crypto-news`)
+2. Replace `YOUR_STUDENT_BUCKET_NAME` in this policy with your actual bucket name
+3. Attach the updated policy to your IAM user
 
 ### 2. `bedrock-models-policy.json`
 **Bedrock-specific permissions** - if you want to separate Bedrock access.
@@ -26,19 +27,24 @@ This folder contains the IAM policies required for the crypto sentiment agent to
 
 ## Setup Instructions
 
-### Step 1: Create IAM User
+### Step 1: Create S3 Bucket First
+1. Go to S3 Console
+2. Create bucket with your name (e.g., `john-doe-crypto-news`)
+3. Ensure bucket is in `us-east-1` region
+4. **Note the exact bucket name** - you'll need it for the next step
+
+### Step 2: Update IAM Policy
+1. Open `s3-bedrock-policy.json`
+2. Replace `YOUR_STUDENT_BUCKET_NAME` with your actual bucket name
+3. Save the file
+
+### Step 3: Create IAM User
 1. Go to AWS IAM Console
 2. Create new user with programmatic access
-3. Attach the `s3-bedrock-policy.json` policy
+3. Attach the updated `s3-bedrock-policy.json` policy
 4. Generate Access Key ID and Secret Access Key
 
-### Step 2: Create S3 Bucket
-1. Go to S3 Console
-2. Create bucket with your name (e.g., `your-name-crypto-news`)
-3. Update the policy with your bucket name
-4. Ensure bucket is in `us-east-1` region
-
-### Step 3: Configure Environment
+### Step 4: Configure Environment
 1. Copy `env.example` to `.env`
 2. Add your AWS credentials
 3. Set your S3 bucket name
