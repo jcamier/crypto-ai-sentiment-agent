@@ -1,0 +1,158 @@
+{
+  "s3_bucket": "crypto-news-pdfs-sep-2025",
+  "region": "us-east-1",
+  "articles": [
+    {
+      "id": "btc_001",
+      "title": "Bitcoin Surges Above $114K as Traders Look Ahead to 'Uptober'",
+      "tokens": ["BTC"],
+      "s3_key": "Bitcoin BTC Price News Gains as October Nears.pdf",
+      "source": "CoinDesk",
+      "published_date": "2025-09-29",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "btc_002",
+      "title": "Bitcoin Altcoins Rebound As Dip Buyers Supply Volume",
+      "tokens": ["BTC"],
+      "s3_key": "Bitcoin Altcoins Rebound As Dip Buyers Supply Volume.pdf",
+      "source": "Decrypt",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "btc_003",
+      "title": "Bitcoin Bounce Fails To Hold Will Altcoins Collapse Next",
+      "tokens": ["BTC"],
+      "s3_key": "Bitcoin Bounce Fails To Hold Will Altcoins Collapse Next.pdf",
+      "source": "Cointelegraph",
+      "published_date": "2025-09-26",
+      "expected_sentiment": "bearish"
+    },
+    {
+      "id": "btc_004",
+      "title": "Bitcoin Price Rebounds But Altcoins BTC Need USD117K First",
+      "tokens": ["BTC"],
+      "s3_key": "Bitcoin Price Rebounds But Altcoins BTC Need USD117K First.pdf",
+      "source": "Cointelegraph",
+      "published_date": "2025-09-26",
+      "expected_sentiment": "neutral"
+    },
+    {
+      "id": "eth_001",
+      "title": "ETH Falls as Crypto, Stocks Correct, but $547M Spot ETF Inflows Show...",
+      "tokens": ["ETH"],
+      "s3_key": "articles/eth-falls-547m-etf-inflows.pdf",
+      "source": "Cointelegraph",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bearish"
+    },
+    {
+      "id": "multi_002",
+      "title": "Price Predictions 9/24: BTC, ETH, XRP, BNB, SOL, DOGE, ADA, HYPE, LINK, AVAX",
+      "tokens": ["BTC", "ETH", "SOL"],
+      "s3_key": "articles/price-predictions-9-24-multi-tokens.pdf",
+      "source": "Cointelegraph",
+      "published_date": "2025-09-24",
+      "expected_sentiment": "neutral"
+    },
+    {
+      "id": "usdt_001",
+      "title": "Tether Moves 8,888 BTC Worth $1 Billion Into Bitcoin Reserve Wallet",
+      "tokens": ["USDT", "BTC"],
+      "s3_key": "articles/tether-8888-btc-reserve-wallet.pdf",
+      "source": "The Block",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "usdt_002",
+      "title": "Tether (USDT) Adds 8,889 BTC to Holdings",
+      "tokens": ["USDT"],
+      "s3_key": "articles/tether-adds-8889-btc-holdings.pdf",
+      "source": "CoinDesk",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "usdt_003",
+      "title": "Liquidity Signals Strengthen as Binance Receives $200M USDT",
+      "tokens": ["USDT"],
+      "s3_key": "articles/binance-200m-usdt-liquidity.pdf",
+      "source": "CCN",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "sol_001",
+      "title": "SOL Slips Below $200, but ETF Verdict Could Trigger 'Institutional Moment' for New Highs",
+      "tokens": ["SOL"],
+      "s3_key": "articles/sol-slips-200-etf-verdict.pdf",
+      "source": "Cointelegraph",
+      "published_date": "2025-09-25",
+      "expected_sentiment": "neutral"
+    },
+    {
+      "id": "sol_002",
+      "title": "The Daily: Visa Pilots Stablecoin Payments, Bloomberg's LTC, SOL...",
+      "tokens": ["SOL"],
+      "s3_key": "articles/visa-stablecoin-payments-sol.pdf",
+      "source": "The Block",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "sol_003",
+      "title": "Crypto Wallet Phantom Unveils Stablecoin and Payments Service",
+      "tokens": ["SOL"],
+      "s3_key": "articles/phantom-stablecoin-payments.pdf",
+      "source": "Decrypt",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "fdusd_001",
+      "title": "Latest First Digital USD (FDUSD) News Update",
+      "tokens": ["FDUSD"],
+      "s3_key": "articles/fdusd-latest-news-update.pdf",
+      "source": "CoinMarketCap",
+      "published_date": "2025-09-27",
+      "expected_sentiment": "neutral"
+    },
+    {
+      "id": "fdusd_002",
+      "title": "First Digital USD (FDUSD) Price Prediction For 2025 & Beyond",
+      "tokens": ["FDUSD"],
+      "s3_key": "articles/fdusd-price-prediction-2025.pdf",
+      "source": "CoinMarketCap",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "neutral"
+    },
+    {
+      "id": "multi_003",
+      "title": "[LIVE] Crypto News Today, September 30 – Bitcoin Price Above...",
+      "tokens": ["BTC", "ETH"],
+      "s3_key": "articles/live-crypto-news-sept-30.pdf",
+      "source": "Yahoo Finance",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "multi_004",
+      "title": "Price Predictions 9/5: BTC, ETH, XRP, BNB, SOL, DOGE, ADA, LINK, HYPE, SUI",
+      "tokens": ["BTC", "ETH", "SOL"],
+      "s3_key": "articles/price-predictions-9-5-multi-tokens.pdf",
+      "source": "Cointelegraph",
+      "published_date": "2025-09-05",
+      "expected_sentiment": "neutral"
+    }
+  ],
+  "coingecko_config": {
+    "base_url": "https://api.coingecko.com/api/v3",
+    "endpoints": {
+      "coins": "/coins/markets",
+      "news": "/search/trending"
+    },
+    "note": "Variable results expected - real-time data"
+  }
+}

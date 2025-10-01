@@ -29,6 +29,8 @@
 - **Containers**: Docker & Docker Compose (all services run locally).
 - **Code Hosting**: GitHub free accounts.
 - **APIs**: CoinGecko API (free tier), CryptoPanic API, or NewsAPI for crypto news.
+    - https://docs.coingecko.com/
+
 
 **Build:** "Crypto News Fetcher Agent" in a Docker container that:
 - Fetches latest crypto news from public APIs (BTC, ETH, SOL focus)
