@@ -1,0 +1,149 @@
+{
+  "s3_bucket": "crypto-news-pdfs-sep-2025",
+  "region": "us-east-1",
+  "articles": [
+    {
+      "id": "btc_001",
+      "title": "Bitcoin Altcoins Rebound As Dip Buyers Supply Volume",
+      "tokens": ["BTC"],
+      "s3_key": "Bitcoin Altcoins Rebound As Dip Buyers Supply Volume.pdf",
+      "source": "Decrypt",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "btc_002",
+      "title": "Bitcoin Bounce Fails To Hold Will Altcoins Collapse Next",
+      "tokens": ["BTC"],
+      "s3_key": "Bitcoin Bounce Fails To Hold Will Altcoins Collapse Next.pdf",
+      "source": "Cointelegraph",
+      "published_date": "2025-09-26",
+      "expected_sentiment": "bearish"
+    },
+    {
+      "id": "btc_003",
+      "title": "Bitcoin BTC Price News Gains as October Nears",
+      "tokens": ["BTC"],
+      "s3_key": "Bitcoin BTC Price News Gains as October Nears.pdf",
+      "source": "CoinDesk",
+      "published_date": "2025-09-29",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "btc_004",
+      "title": "Bitcoin Price Rebounds But Altcoins BTC Need USD117K First",
+      "tokens": ["BTC"],
+      "s3_key": "Bitcoin Price Rebounds But Altcoins BTC Need USD117K First.pdf",
+      "source": "Cointelegraph",
+      "published_date": "2025-09-26",
+      "expected_sentiment": "neutral"
+    },
+    {
+      "id": "btc_005",
+      "title": "Bitcoin Rally Pushes Crypto Into Green for September But Alts Are Lagging Analysis",
+      "tokens": ["BTC"],
+      "s3_key": "Bitcoin Rally Pushes Crypto Into Green for September But Alts Are Lagging Analysis Decrypt.pdf",
+      "source": "Decrypt",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "sol_001",
+      "title": "Crypto Wallet Phantom Unveils Stablecoin and Payments Service",
+      "tokens": ["SOL"],
+      "s3_key": "Crypto Wallet Phantom Unveils Stablecoin and Payments Service Decrypt.pdf",
+      "source": "Decrypt",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "eth_001",
+      "title": "ETH Rejects USD4.2K But ETF Inflows Are Bullish",
+      "tokens": ["ETH"],
+      "s3_key": "ETH Rejects USD4.2K But ETF Inflows Are Bullish.pdf",
+      "source": "Cointelegraph",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bearish"
+    },
+    {
+      "id": "fdusd_001",
+      "title": "First Digital USD FDUSD Price Prediction For 2025 and Beyond",
+      "tokens": ["FDUSD"],
+      "s3_key": "First Digital USD FDUSD Price Prediction For 2025 and Beyond.pdf",
+      "source": "CoinMarketCap",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "neutral"
+    },
+    {
+      "id": "fdusd_002",
+      "title": "Latest First Digital USD News FDUSD Future Outlook Trends and Market Insights",
+      "tokens": ["FDUSD"],
+      "s3_key": "Latest First Digital USD News FDUSD Future Outlook Trends and Market Insights.pdf",
+      "source": "CoinMarketCap",
+      "published_date": "2025-09-27",
+      "expected_sentiment": "neutral"
+    },
+    {
+      "id": "usdt_001",
+      "title": "Liquidity Signals Strengthen as Binance Receives USD200M USDT",
+      "tokens": ["USDT"],
+      "s3_key": "Liquidity Signals Strengthen as Binance Receives USD200M USDT CCN.com.pdf",
+      "source": "CCN",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "multi_001",
+      "title": "LIVE Crypto News Today September 30 Bitcoin Price Above USD113K Ethereum Holds USD4100 and SOL at USD208 Best Altcoins to Buy",
+      "tokens": ["BTC", "ETH", "SOL"],
+      "s3_key": "LIVE Crypto News Today September 30 Bitcoin Price Above USD113K Ethereum Holds USD4100 and SOL at USD208 Best Altcoins to Buy.pdf",
+      "source": "Yahoo Finance",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "sol_002",
+      "title": "SOL Dips To USD192 Ahead of Key ETF Ruling",
+      "tokens": ["SOL"],
+      "s3_key": "SOL Dips To USD192 Ahead of Key ETF Ruling.pdf",
+      "source": "Cointelegraph",
+      "published_date": "2025-09-25",
+      "expected_sentiment": "neutral"
+    },
+    {
+      "id": "usdt_002",
+      "title": "Tether moves 8888 BTC worth USD1 billion into bitcoin reserve wallet onchain data shows",
+      "tokens": ["USDT", "BTC"],
+      "s3_key": "Tether moves 8888 BTC worth USD1 billion into bitcoin reserve wallet onchain data shows The Block.pdf",
+      "source": "The Block",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "usdt_003",
+      "title": "Tether USDT Adds 8889 BTC to Holdings",
+      "tokens": ["USDT"],
+      "s3_key": "Tether USDT Adds 8889 BTC to Holdings.pdf",
+      "source": "CoinDesk",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    },
+    {
+      "id": "sol_003",
+      "title": "The Daily Visa pilots stablecoin payments Bloomberg LTC SOL and XRP ETF approval odds hit 100 percent and more",
+      "tokens": ["SOL"],
+      "s3_key": "The Daily Visa pilots stablecoin payments Bloomberg LTC SOL and XRP ETF approval odds hit 100 percent and moreThe Block.pdf",
+      "source": "The Block",
+      "published_date": "2025-09-30",
+      "expected_sentiment": "bullish"
+    }
+  ],
+  "coingecko_config": {
+    "base_url": "https://api.coingecko.com/api/v3",
+    "endpoints": {
+      "coins": "/coins/markets",
+      "news": "/search/trending"
+    },
+    "note": "Variable results expected - real-time data"
+  }
+}
