@@ -31,6 +31,30 @@ We're using **two data sources** (S3 PDFs + CoinGecko API) to give you the best 
 - **Add Complexity**: Progress to live API integration with error handling
 - **Build Confidence**: Master one approach before adding the next layer
 
+## Prerequisites: AWS Setup
+
+**⚠️ IMPORTANT: Complete AWS setup before building the application**
+
+### Required AWS Resources:
+1. **AWS Account** with billing enabled
+2. **IAM User** with programmatic access
+3. **S3 Bucket** (your student bucket)
+4. **AWS Credentials** (Access Key ID and Secret Access Key)
+
+### IAM Permissions:
+See `aws-policies/` folder for required IAM policies:
+- `s3-bedrock-policy.json` - Permissions for S3 and Bedrock access
+- `bedrock-models-policy.json` - Specific Bedrock model permissions
+
+### Setup Steps:
+1. Create IAM user with the provided policies
+2. Generate Access Key ID and Secret Access Key
+3. Create your own S3 bucket for data storage
+4. Configure `.env` file with your credentials
+5. Test AWS connectivity before proceeding
+
+**Note**: Without proper AWS setup, the application will fail to start.
+
 ## Day 1 Requirements
 
 ### Core Functionality
