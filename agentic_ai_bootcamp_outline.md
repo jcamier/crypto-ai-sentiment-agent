@@ -25,7 +25,7 @@
     - https://opencode.ai/
     - https://claude.com/product/claude-code
 - Spec-Driven AI Development
-- **LLMs**: Local Ollama models (llama3.2:latest) for development, prepare for Amazon Bedrock migration.
+- **LLMs**: Amazon Bedrock (Claude 3 Haiku) for cost-effective sentiment analysis and embeddings.
 - **Containers**: Docker & Docker Compose (all services run locally).
 - **Code Hosting**: GitHub free accounts.
 - **APIs**: CoinGecko API (free tier) for live data + S3 bucket for reproducible testing
@@ -38,7 +38,7 @@
 - Downloads and processes 15 crypto news PDFs from S3 bucket (reproducible testing)
 - Creates FastAPI service to fetch latest crypto news from CoinGecko API (real-time data)
 - Parses and structures news data from both sources
-- Basic sentiment classification using local LLM
+- Basic sentiment classification using Amazon Bedrock
 - Stores processed data in local Postgres container
 
 **Discussion:** API rate limits, data quality, and what happens in production when scaling, auth, and retries are needed.

@@ -37,7 +37,7 @@ We're using **two data sources** (S3 PDFs + CoinGecko API) to give you the best 
 - **S3 News Fetcher**: Download and process 15 crypto news PDFs from S3 bucket (reproducible testing)
 - **Live API Service**: FastAPI service to fetch latest crypto news from CoinGecko API (real-time data)
 - **Data Parser**: Structure and clean news data (title, content, source, timestamp)
-- **Sentiment Classifier**: Basic sentiment analysis using local LLM (bullish/bearish/neutral)
+- **Sentiment Classifier**: Basic sentiment analysis using Amazon Bedrock (bullish/bearish/neutral)
 - **Data Storage**: Store raw news data in local Postgres database
 
 ### Technical Stack
@@ -50,13 +50,14 @@ We're using **two data sources** (S3 PDFs + CoinGecko API) to give you the best 
 - **APIs**: CoinGecko API (live data) + S3 bucket (reproducible testing)
 
 ### Data Sources
-- **S3 Bucket**: 15 crypto news PDFs (reproducible testing data)
-  - Bucket: `crypto-news-pdfs-sep-2025`
-  - Focus: BTC, ETH, SOL, USDT, FDUSD articles
-  - Sources: CoinDesk, Cointelegraph, Decrypt, The Block, CCN
+- **S3 Bucket Strategy**:
+  - **Instructor's Bucket**: `crypto-news-pdfs-sep-2025` (source of 15 PDFs via news_sources.json)
+  - **Student's Bucket**: Each student creates their own S3 bucket for data storage
+  - **Process**: Download PDFs from instructor's bucket → store in student's bucket → populate database
 - **Live API**: CoinGecko API for real-time crypto news
   - Endpoint: `https://api.coingecko.com/api/v3/search/trending`
   - Rate limiting: 10-30 calls/minute (free tier)
+  - **Note**: Free tier still requires API key
 
 ### Database Schema
 ```sql
@@ -102,10 +103,10 @@ CREATE TABLE news_articles (
 Create `.env` file with the following variables:
 ```bash
 # Database Configuration
+DATABASE_URL=postgresql://user:password@postgres:5432/crypto_news
 DB_NAME=crypto_news
 DB_USER=user
 DB_PASS=password
-DB_HOST=postgres
 
 # AWS Configuration
 AWS_ACCESS_KEY_ID=your_access_key
