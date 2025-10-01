@@ -26,7 +26,7 @@ services:
       - "8000:8000"
     environment:
       # Database Configuration
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASS:-postgres}@db:5432/${DB_NAME:-crypto_news}
       - DB_NAME=${DB_NAME:-crypto_news}
       - DB_USER=${DB_USER:-postgres}
       - DB_PASS=${DB_PASS:-postgres}
