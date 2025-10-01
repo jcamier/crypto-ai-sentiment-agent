@@ -17,11 +17,12 @@ WORKDIR /app
 # Copy dependency files
 COPY pyproject.toml README.md ./
 
-# Install Python dependencies
-RUN uv pip install --system -e .
+# Install Python dependencies (including dev dependencies for testing)
+RUN uv pip install --system -e ".[dev]"
 
-# Copy source code
+# Copy source code and tests
 COPY src/ ./src/
+COPY tests/ ./tests/
 
 # Set Python path
 ENV PYTHONPATH=/app/src

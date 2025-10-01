@@ -37,29 +37,12 @@ def get_db():
 def init_db():
     """Initialize database with required tables."""
     try:
+        # Import models to ensure they are registered with Base
+        from src.models import NewsArticle
+
         # Create all tables
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created successfully")
-
-        # Create news_articles table if it doesn't exist
-        with engine.connect() as conn:
-            conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS news_articles (
-                    id SERIAL PRIMARY KEY,
-                    title TEXT NOT NULL,
-                    content TEXT,
-                    source VARCHAR(255),
-                    url TEXT,
-                    published_at TIMESTAMP,
-                    tokens_mentioned TEXT[],
-                    sentiment VARCHAR(20),
-                    confidence_score FLOAT,
-                    s3_bucket_source VARCHAR(255),
-                    s3_key_source VARCHAR(500),
-                    created_at TIMESTAMP DEFAULT NOW()
-                );
-            """))
-            conn.commit()
 
         logger.info("Database initialization completed")
 
