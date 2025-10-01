@@ -2,6 +2,13 @@
 
 ### An Agentic Workflow for Crypto News Sentiment Project Bootcamp
 
+## Five-Day Bootcamp Overview
+- **Day 1**: Build crypto news fetcher agent with local LLM and Docker containers
+- **Day 2**: Set up AWS infrastructure with CI/CD pipeline using GitHub Actions and Terraform
+- **Day 3**: Implement embeddings, sentiment analysis, and observability with Prometheus/Grafana
+- **Day 4**: Migrate to Amazon Bedrock with guardrails, retry logic, and evaluation harness
+- **Day 5**: Deploy production dashboard with CloudFront and complete crypto sentiment trends
+
 ---
 ### Crypto Market URL: https://coinmarketcap.com/
 ---
