@@ -99,6 +99,8 @@ CREATE TABLE news_articles (
 - **Docker Compose**: Orchestrate both containers
 - **Environment variables**: AWS credentials, CoinGecko API key, database connection strings, S3 bucket configuration
 
+**Note**: For production deployments, consider using Podman instead of Docker for better security (rootless containers, no daemon). However, Docker is used in this bootcamp for its simplicity and wider ecosystem support.
+
 ### Environment Configuration
 Create `.env` file with the following variables:
 ```bash

@@ -27,6 +27,7 @@
 - Spec-Driven AI Development
 - **LLMs**: Amazon Bedrock (Claude 3 Haiku) for cost-effective sentiment analysis and embeddings.
 - **Containers**: Docker & Docker Compose (all services run locally).
+  - **Note**: For production, consider Podman for better security (rootless containers)
 - **Code Hosting**: GitHub free accounts.
 - **APIs**: CoinGecko API (free tier) for live data + S3 bucket for reproducible testing
     - https://docs.coingecko.com/
