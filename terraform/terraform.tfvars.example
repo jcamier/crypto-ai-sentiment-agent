@@ -1,0 +1,15 @@
+# terraform/terraform.tfvars.example
+# Copy this to terraform.tfvars and fill in your values
+
+# Your AWS region
+aws_region = "us-east-1"
+
+# Your EC2 Key Pair name (optional - leave empty if you don't have one)
+key_pair_name = ""
+
+# Additional IPs for SSH access (for traveling)
+additional_ssh_ips = [
+  # "YOUR_HOME_IP/32",
+  # "YOUR_OFFICE_IP/32",
+  # "YOUR_VPN_IP/32"
+]
