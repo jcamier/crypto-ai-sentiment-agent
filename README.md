@@ -21,13 +21,7 @@ cp env.example .env
 # - COINGECKO_API_KEY
 ```
 
-### 2. Test Setup
-```bash
-# Run setup test to verify configuration
-python test_setup.py
-```
-
-### 3. Start Services
+### 2. Start Services
 ```bash
 # Start Docker containers
 make up
@@ -35,17 +29,23 @@ make up
 # Initialize database
 make setup
 
+# Run tests to verify everything is working
+make test
+```
+
+### 3. Use the API
+```bash
+# Test API endpoints
+curl http://localhost:8000/health
+
 # Process S3 PDFs (15 crypto news articles)
-make process-s3
+curl -X POST http://localhost:8000/api/process/s3/
 
 # Fetch live news from CoinGecko
-make fetch-coingecko
+curl -X POST http://localhost:8000/api/fetch/live/
 
 # Analyze sentiment using Amazon Bedrock
-make analyze-sentiment
-
-# Test API endpoints
-make test-api
+curl -X POST http://localhost:8000/api/analyze/sentiment/
 ```
 
 ## 📊 API Endpoints
@@ -101,23 +101,20 @@ src/
 ## 🔧 Development Commands
 
 ```bash
-# Development
-make install    # Install Python dependencies
-make lint       # Run code linting
-make format     # Format code with black/isort
-make test       # Run tests
-
-# Docker operations
+# Core commands
+make help       # Show all available commands
+make build      # Build Docker images
 make up         # Start services
 make down       # Stop services
-make build      # Build images
+make setup      # Initialize database
+make test       # Run tests
+make clean      # Clean up containers and volumes
+
+# Development tools
 make logs       # View logs
 make shell      # Shell into container
-
-# Data processing
-make process-s3      # Process S3 PDFs
-make fetch-coingecko # Fetch live news
-make analyze-sentiment # Run sentiment analysis
+make lint       # Run code linting
+make format     # Format code with black/isort
 ```
 
 ## 📋 Five-Day Bootcamp Overview
