@@ -18,27 +18,21 @@ This Terraform configuration creates a complete infrastructure from scratch for 
 
 ## 🚀 Quick Start
 
-### 1. Run Setup Script
+### 1. Configure Terraform
 ```bash
 cd terraform
-chmod +x setup.sh
-./setup.sh
-```
-
-### 2. Configure Terraform
-```bash
 cp terraform.tfvars.example terraform.tfvars
 # Edit terraform.tfvars if needed (optional)
 ```
 
-### 3. Deploy Infrastructure
+### 2. Deploy Infrastructure
 ```bash
 terraform init
 terraform plan    # Review what will be created
 terraform apply   # Create everything (type 'yes' when prompted)
 ```
 
-### 4. Get Connection Info
+### 3. Get Connection Info
 ```bash
 terraform output
 ```
