@@ -39,14 +39,6 @@ build:
 setup: init-db setup-pgvector
 	@echo "Project setup complete!"
 
-# Initialize database
-init-db:
-	docker compose exec crypto-agent bash -c "cd /app && python -c 'from src.database import init_db; init_db()'"
-
-# Setup pgvector extension
-setup-pgvector:
-	docker compose exec crypto-agent bash -c "cd /app && python -c 'from src.database import setup_pgvector; setup_pgvector()'"
-
 # Run tests
 test:
 	docker compose exec crypto-agent bash -c "cd /app && python -m pytest tests/ -v"
@@ -72,4 +64,16 @@ lint:
 format:
 	black src/ tests/
 	isort src/ tests/
+
+# =============================================================================
+# Internal setup commands (one-time setup, not regular make commands)
+# =============================================================================
+
+# Initialize database
+init-db:
+	docker compose exec crypto-agent bash -c "cd /app && python -c 'from src.database import init_db; init_db()'"
+
+# Setup pgvector extension
+setup-pgvector:
+	docker compose exec crypto-agent bash -c "cd /app && python -c 'from src.database import setup_pgvector; setup_pgvector()'"
 
