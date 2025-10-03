@@ -4,7 +4,7 @@ SQLAlchemy models for the crypto sentiment agent.
 
 from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ARRAY
 from sqlalchemy.sql import func
-from src.database import Base
+from database import Base
 
 
 class NewsArticle(Base):

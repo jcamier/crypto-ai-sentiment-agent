@@ -38,7 +38,7 @@ def init_db():
     """Initialize database with required tables."""
     try:
         # Import models to ensure they are registered with Base
-        from src.models import NewsArticle
+        from models import NewsArticle
 
         # Create all tables
         Base.metadata.create_all(bind=engine)
