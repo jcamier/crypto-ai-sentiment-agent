@@ -122,7 +122,7 @@ resource "aws_security_group" "crypto_agent" {
 # EC2 Instance
 resource "aws_instance" "crypto_agent" {
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.small"  # 2 vCPU, 2GB RAM
+  instance_type = "t3.medium"  # 2 vCPU, 4GB RAM
 
   vpc_security_group_ids = [aws_security_group.crypto_agent.id]
 
