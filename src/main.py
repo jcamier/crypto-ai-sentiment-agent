@@ -11,11 +11,11 @@ import uvicorn
 from decouple import config
 import logging
 
-from src.database import get_db, init_db, setup_pgvector
-from src.models import NewsArticle
-from src.services.s3_processor import process_s3_pdfs
-from src.services.coingecko_service import fetch_latest_news
-from src.services.sentiment_analyzer import analyze_all_articles
+from database import get_db, init_db, setup_pgvector
+from models import NewsArticle
+from services.s3_processor import process_s3_pdfs
+from services.coingecko_service import fetch_latest_news
+from services.sentiment_analyzer import analyze_all_articles
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

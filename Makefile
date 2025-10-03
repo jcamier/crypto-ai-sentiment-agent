@@ -71,9 +71,9 @@ format:
 
 # Initialize database
 init-db:
-	docker compose exec crypto-agent bash -c "cd /app && python -c 'from src.database import init_db; init_db()'"
+	docker compose exec crypto-agent bash -c "cd /app/src && python -c 'from database import init_db; init_db()'"
 
 # Setup pgvector extension
 setup-pgvector:
-	docker compose exec crypto-agent bash -c "cd /app && python -c 'from src.database import setup_pgvector; setup_pgvector()'"
+	docker compose exec crypto-agent bash -c "cd /app/src && python -c 'from database import setup_pgvector; setup_pgvector()'"
 
