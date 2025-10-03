@@ -1,0 +1,84 @@
+name: Deploy Crypto Agent
+
+on:
+  # push:
+  #   branches: [production]  # Disabled automatic deployment
+  pull_request:
+    branches: [main, production]
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]"
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+      - name: Run linting
+        run: |
+          flake8 src/ tests/
+          black --check src/ tests/
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'  # Only manual triggers
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: crypto-sentiment-agent
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Deploy to EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: crypto-sentiment-agent
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" > ssh_key
+          chmod 600 ssh_key
+
+          # Copy deploy script to EC2
+          scp -i ssh_key -o StrictHostKeyChecking=no scripts/deploy.sh $EC2_USER@$EC2_HOST:/tmp/
+
+          # Run deployment on EC2
+          ssh -i ssh_key -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST "
+            chmod +x /tmp/deploy.sh
+            /tmp/deploy.sh $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          "
+
+      - name: Health Check
+        run: |
+          sleep 30
+          curl -f https://${{ secrets.CLOUDFRONT_DOMAIN }}/health || exit 1

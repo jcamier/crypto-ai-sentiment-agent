@@ -88,7 +88,7 @@ Internet → CloudFront → EC2 (FastAPI + PostgreSQL)
 
 #### EC2 Instance Configuration
 ```yaml
-Instance Type: t3.small (2 vCPU, 2GB RAM - perfect for pgvector)
+Instance Type: t3.medium (2 vCPU, 4GB RAM - perfect for pgvector)
 AMI: Ubuntu Server 22.04 LTS
 Storage: 20GB GP3
 Security Groups: See detailed configuration below
@@ -345,7 +345,7 @@ resource "aws_security_group" "crypto_agent" {
 # EC2 Instance
 resource "aws_instance" "crypto_agent" {
   ami           = "ami-0c7217cde4661b399"  # Ubuntu Server 22.04 LTS
-  instance_type = "t3.small"  # 2 vCPU, 2GB RAM
+  instance_type = "t3.medium"  # 2 vCPU, 4GB RAM
 
   vpc_security_group_ids = [aws_security_group.crypto_agent.id]
   iam_instance_profile   = aws_iam_instance_profile.crypto_agent.name
@@ -560,11 +560,11 @@ services:
 - **Documentation**: Deployment and troubleshooting guides
 
 ### Cost Optimization
-- **EC2 Instance**: Use t3.small ($0.0243/hr = ~$18/month for 24/7)
+- **EC2 Instance**: Use t3.medium ($0.0416/hr = ~$30/month for 24/7)
 - **ECR Storage**: Implement lifecycle policies to manage image storage
 - **SSM Parameters**: Use Standard parameters for non-sensitive data
 - **Monitoring**: Basic CloudWatch metrics (free tier)
-- **Estimated Monthly Cost**: $18-20 for development environment
+- **Estimated Monthly Cost**: $30-35 for development environment
 
 ### Troubleshooting Guide
 
