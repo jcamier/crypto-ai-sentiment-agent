@@ -8,8 +8,8 @@ import logging
 from typing import Dict, Any, List, Tuple
 from decouple import config
 from sqlalchemy.orm import Session
-from src.database import SessionLocal
-from src.models import NewsArticle
+from database import SessionLocal
+from models import NewsArticle
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
