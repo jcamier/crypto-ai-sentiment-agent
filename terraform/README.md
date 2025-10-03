@@ -4,7 +4,7 @@ This Terraform configuration creates a complete infrastructure from scratch for 
 
 ## 🎯 What This Creates
 
-- **EC2 Instance**: t3.small with Ubuntu 22.04 LTS
+- **EC2 Instance**: t3.medium with Ubuntu 22.04 LTS
 - **Security Group**: Properly configured with CloudFront-only access
 - **ECR Repository**: For storing Docker images
 - **CloudFront Distribution**: For secure web access
@@ -64,7 +64,7 @@ additional_ssh_ips = [
 - **PostgreSQL (5432)**: Localhost only
 
 ### EC2 Instance
-- **Type**: t3.small (2 vCPU, 2GB RAM)
+- **Type**: t3.medium (2 vCPU, 4GB RAM)
 - **OS**: Ubuntu 22.04 LTS
 - **Storage**: 20GB GP3 (encrypted)
 - **Pre-installed**: Docker, Docker Compose, AWS CLI, Git
@@ -150,7 +150,7 @@ aws ec2 describe-security-groups
 
 ## 💰 Cost Estimation
 
-- **EC2 t3.small**: ~$18-20/month
+- **EC2 t3.medium**: ~$30-35/month
 - **CloudFront**: ~$1-2/month (depending on traffic)
 - **ECR**: ~$0.10/month (for image storage)
-- **Total**: ~$20-25/month
+- **Total**: ~$35-40/month
