@@ -51,6 +51,110 @@ Create IAM roles with the following policies:
 
 **Note**: Without proper AWS setup, the deployment pipeline will fail.
 
+## AWS & GitHub Actions Setup Guide
+
+### Step 1: Create OIDC Identity Provider
+1. **Go to AWS Console** → IAM → Identity providers → Add provider
+2. **Provider type**: OpenID Connect
+3. **Provider URL**: `https://token.actions.githubusercontent.com`
+4. **Audience**: `sts.amazonaws.com`
+5. **Click "Add provider"**
+
+### Step 2: Create IAM Role for GitHub Actions
+1. **Go to IAM** → Roles → Create role
+2. **Trusted entity type**: Web identity
+3. **Identity provider**: `token.actions.githubusercontent.com`
+4. **Audience**: `sts.amazonaws.com`
+5. **Add trust policy conditions**:
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": {
+           "Federated": "arn:aws:iam::YOUR_ACCOUNT_ID:oidc-provider/token.actions.githubusercontent.com"
+         },
+         "Action": "sts:AssumeRoleWithWebIdentity",
+         "Condition": {
+           "StringEquals": {
+             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
+           },
+           "StringLike": {
+             "token.actions.githubusercontent.com:sub": "repo:YOUR_GITHUB_USERNAME/YOUR_REPO_NAME:*"
+           }
+         }
+       }
+     ]
+   }
+   ```
+
+### Step 3: Attach Required Policies
+Attach these AWS managed policies to the role:
+- **AmazonEC2ContainerRegistryFullAccess** - For ECR operations
+- **AmazonEC2FullAccess** - For EC2 operations
+- **CloudFrontFullAccess** - For CloudFront operations
+
+### Step 4: Configure GitHub Repository Secrets
+Go to your GitHub repository → Settings → Secrets and variables → Actions
+
+Add these secrets:
+- **`AWS_ROLE_ARN`**: `arn:aws:iam::YOUR_ACCOUNT_ID:role/YOUR_ROLE_NAME`
+- **`EC2_HOST`**: Your EC2 public IP address
+- **`EC2_USER`**: `ubuntu`
+- **`EC2_SSH_KEY`**: Your private SSH key content (entire .pem file)
+- **`CLOUDFRONT_DOMAIN`**: Your CloudFront domain or `YOUR_EC2_IP:8000` for testing
+
+### Step 5: Trigger the Deployment
+1. **Push your code to GitHub**
+2. **Go to Actions tab** in your repository
+3. **Click "Deploy Crypto Agent"** workflow
+4. **Click "Run workflow"** button
+5. **Select your branch** and click "Run workflow"
+
+## Deployment Files Explained
+
+### `.github/workflows/deploy.yml` (GitHub Actions Workflow)
+**Purpose**: Orchestrates the entire deployment process from GitHub's servers
+
+**What it does**:
+- Runs automated tests and linting
+- Builds Docker image from your code
+- Pushes image to Amazon ECR
+- Copies deployment script to EC2
+- Triggers deployment on EC2 instance
+- Runs health checks
+
+**Runs on**: GitHub's servers (in the cloud)
+
+### `scripts/deploy.sh` (Deployment Script)
+**Purpose**: Handles the actual deployment work on your EC2 instance
+
+**What it does**:
+- Logs into Amazon ECR
+- Pulls the latest Docker image
+- Stops existing containers
+- Updates docker-compose.yml with new image
+- Starts the application with new image
+- Runs health checks to verify deployment
+
+**Runs on**: Your EC2 instance (on the server)
+
+### How They Work Together
+```
+GitHub Actions (deploy.yml):
+1. Builds image → Pushes to ECR
+2. Copies deploy.sh to EC2
+3. Runs: ssh ec2 "deploy.sh"
+
+EC2 Instance (deploy.sh):
+1. Pulls image from ECR
+2. Deploys application
+3. Runs health check
+```
+
+**Both files are essential** - the workflow file orchestrates everything, and the deploy script does the actual work on the server.
+
 ## Day 2 Requirements
 
 ### Core Infrastructure
