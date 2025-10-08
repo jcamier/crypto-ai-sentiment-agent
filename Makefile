@@ -39,8 +39,13 @@ build:
 setup: init-db setup-pgvector
 	@echo "Project setup complete!"
 
-# Run tests
+# Run tests (automatically starts services if needed)
 test:
+	@echo "Starting services and running tests..."
+	docker compose up -d
+	@echo "Waiting for services to be ready..."
+	sleep 5
+	@echo "Running tests..."
 	docker compose exec crypto-agent bash -c "cd /app && python -m pytest tests/ -v"
 
 # Clean up
