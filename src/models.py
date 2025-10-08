@@ -11,6 +11,7 @@ class NewsArticle(Base):
     """Model for storing crypto news articles."""
 
     __tablename__ = "news_articles"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(Text, nullable=False)
