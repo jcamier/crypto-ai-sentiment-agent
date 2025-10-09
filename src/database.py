@@ -4,7 +4,7 @@ Database configuration and setup for the crypto sentiment agent.
 
 import os
 from sqlalchemy import create_engine, text
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 from decouple import config
 import logging

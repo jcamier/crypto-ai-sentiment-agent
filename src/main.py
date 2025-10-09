@@ -7,6 +7,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from contextlib import asynccontextmanager
 import uvicorn
 from decouple import config
 import logging
@@ -21,11 +22,30 @@ from services.sentiment_analyzer import analyze_all_articles
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan events."""
+    # Startup
+    try:
+        init_db()
+        setup_pgvector()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
+
+    yield
+
+    # Shutdown
+    logger.info("Application shutting down")
+
+
 # Create FastAPI app
 app = FastAPI(
     title="Crypto News & Sentiment Agent",
     description="Agentic AI workflow for crypto news sentiment analysis",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan
 )
 
 # Add CORS middleware
@@ -36,16 +56,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database on startup."""
-    try:
-        init_db()
-        setup_pgvector()
-        logger.info("Database initialized successfully")
-    except Exception as e:
-        logger.error(f"Database initialization failed: {e}")
 
 @app.get("/")
 async def root():
@@ -75,7 +85,7 @@ async def health_check():
 async def get_news(
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    sentiment: Optional[str] = Query(None, regex="^(bullish|bearish|neutral)$"),
+    sentiment: Optional[str] = Query(None, pattern="^(bullish|bearish|neutral)$"),
     token: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
