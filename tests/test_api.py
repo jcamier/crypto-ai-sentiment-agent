@@ -70,9 +70,11 @@ def test_process_s3_endpoint(test_client):
 
 def test_fetch_live_news_endpoint(test_client):
     """Test fetch live news endpoint."""
-    # Mock the CoinGecko service to avoid API dependencies
-    with patch('src.services.coingecko_service.fetch_latest_news') as mock_fetch:
-        mock_fetch.return_value = None  # No return value expected
+    # Mock the entire CoinGecko service to avoid database and API dependencies
+    with patch('src.services.coingecko_service.CoinGeckoService') as mock_service_class:
+        mock_service = MagicMock()
+        mock_service.fetch_latest_news.return_value = None
+        mock_service_class.return_value = mock_service
 
         response = test_client.post("/api/fetch/live/")
 
@@ -84,9 +86,11 @@ def test_fetch_live_news_endpoint(test_client):
 
 def test_analyze_sentiment_endpoint(test_client):
     """Test analyze sentiment endpoint."""
-    # Mock the sentiment analyzer to avoid AWS Bedrock dependencies
-    with patch('src.services.sentiment_analyzer.analyze_all_articles') as mock_analyze:
-        mock_analyze.return_value = None  # No return value expected
+    # Mock the entire sentiment analyzer to avoid database and AWS dependencies
+    with patch('src.services.sentiment_analyzer.SentimentAnalyzer') as mock_analyzer_class:
+        mock_analyzer = MagicMock()
+        mock_analyzer.analyze_all_articles.return_value = None
+        mock_analyzer_class.return_value = mock_analyzer
 
         response = test_client.post("/api/analyze/sentiment/")
 
