@@ -71,22 +71,7 @@ def test_client(test_db):
     return TestClient(app)
 
 
-@pytest.fixture
-def sample_news_article(test_db):
-    """Create a sample news article for testing."""
-    article = NewsArticle(
-        title="Bitcoin Price Surges to New Highs",
-        content="Bitcoin has reached new all-time highs as institutional adoption continues to grow...",
-        source="CoinDesk",
-        url="https://example.com/bitcoin-surge",
-        published_at=datetime(2024, 1, 1, 0, 0, 0),
-        sentiment="bullish",
-        confidence_score=0.85,
-        tokens_mentioned=["BTC", "BITCOIN"]
-    )
-    test_db.add(article)
-    test_db.commit()
-    return article
+# Sample news article fixture removed - database tests removed for now
 
 
 # AWS mocking fixtures - will be enabled when moto is installed
