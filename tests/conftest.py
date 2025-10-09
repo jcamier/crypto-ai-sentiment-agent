@@ -13,11 +13,16 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 # from moto import mock_aws  # Will be enabled when moto is installed
 
-# Set test database URL before importing the app
+# Set test database URL and environment variables before importing the app
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 os.environ["DB_NAME"] = "test_crypto_news"
 os.environ["DB_USER"] = "test_user"
 os.environ["DB_PASS"] = "test_pass"
+# Set required environment variables to avoid config errors
+os.environ["AWS_ACCESS_KEY_ID"] = "test_key"
+os.environ["AWS_SECRET_ACCESS_KEY"] = "test_secret"
+os.environ["COINGECKO_API_KEY"] = "test_api_key"
+os.environ["S3_BUCKET_NAME"] = "test_bucket"
 
 from src.database import Base, get_db
 from src.main import app
@@ -49,9 +54,13 @@ def test_db():
 
     app.dependency_overrides[get_db] = override_get_db
 
-    yield TestingSessionLocal()
+    # Create a test session for the fixture
+    test_session = TestingSessionLocal()
+
+    yield test_session
 
     # Clean up
+    test_session.close()
     Base.metadata.drop_all(bind=engine)
     app.dependency_overrides.clear()
 

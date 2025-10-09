@@ -4,7 +4,7 @@ Tests for FastAPI endpoints.
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 from src.models import NewsArticle
 
 
