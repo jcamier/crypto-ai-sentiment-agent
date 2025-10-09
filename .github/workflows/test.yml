@@ -51,5 +51,5 @@ jobs:
 
       - name: Run linting
         run: |
-          flake8 src/ tests/
+          ruff check src/ tests/
           black --check src/ tests/
