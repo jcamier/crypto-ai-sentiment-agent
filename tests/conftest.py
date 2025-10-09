@@ -5,11 +5,13 @@ Simple pytest configuration for the crypto sentiment agent tests.
 import pytest
 import os
 import tempfile
+from datetime import datetime
 from fastapi.testclient import TestClient
 from unittest.mock import patch, MagicMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+# from moto import mock_aws  # Will be enabled when moto is installed
 
 # Set test database URL before importing the app
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
@@ -68,7 +70,7 @@ def sample_news_article(test_db):
         content="Bitcoin has reached new all-time highs as institutional adoption continues to grow...",
         source="CoinDesk",
         url="https://example.com/bitcoin-surge",
-        published_at="2024-01-01T00:00:00Z",
+        published_at=datetime(2024, 1, 1, 0, 0, 0),
         sentiment="bullish",
         confidence_score=0.85,
         tokens_mentioned=["BTC", "BITCOIN"]
@@ -76,3 +78,58 @@ def sample_news_article(test_db):
     test_db.add(article)
     test_db.commit()
     return article
+
+
+# AWS mocking fixtures - will be enabled when moto is installed
+# @pytest.fixture
+# def mock_aws_services():
+#     """Mock AWS services using Moto."""
+#     with mock_aws():
+#         yield
+#
+#
+# @pytest.fixture
+# def mock_s3_bucket(mock_aws_services):
+#     """Create a mock S3 bucket with test PDF content."""
+#     import boto3
+#     from io import BytesIO
+#
+#     # Create S3 client
+#     s3_client = boto3.client('s3', region_name='us-east-1')
+#
+#     # Create test bucket
+#     bucket_name = 'test-crypto-news-bucket'
+#     s3_client.create_bucket(Bucket=bucket_name)
+#
+#     # Create a mock PDF content
+#     mock_pdf_content = b"Mock PDF content for testing"
+#
+#     # Upload test PDF
+#     s3_client.put_object(
+#         Bucket=bucket_name,
+#         Key='test-article.pdf',
+#         Body=mock_pdf_content,
+#         ContentType='application/pdf'
+#     )
+#
+#     return bucket_name
+#
+#
+# @pytest.fixture
+# def mock_bedrock_client(mock_aws_services):
+#     """Mock Bedrock client for sentiment analysis."""
+#     import boto3
+#     from io import BytesIO
+#
+#     # Create Bedrock client
+#     bedrock_client = boto3.client('bedrock-runtime', region_name='us-east-1')
+#
+#     # Mock the invoke_model method
+#     def mock_invoke_model(*args, **kwargs):
+#         return {
+#             'body': BytesIO(b'{"content": [{"text": "{\\"sentiment\\": \\"bullish\\", \\"confidence\\": 0.85}"}]}'),
+#             'contentType': 'application/json'
+#         }
+#
+#     bedrock_client.invoke_model = mock_invoke_model
+#     return bedrock_client
