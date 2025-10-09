@@ -2,10 +2,9 @@
 Tests for FastAPI endpoints.
 """
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch, MagicMock
-from src.models import NewsArticle
 
 
 def test_root_endpoint(test_client):
@@ -33,7 +32,7 @@ def test_health_endpoint(test_client):
 def test_process_s3_endpoint(test_client):
     """Test S3 processing endpoint."""
     # Mock the entire S3Processor class to avoid AWS dependencies
-    with patch('src.services.s3_processor.S3Processor') as mock_processor_class:
+    with patch("src.services.s3_processor.S3Processor") as mock_processor_class:
         mock_processor = MagicMock()
         mock_processor.process_all_articles.return_value = []
         mock_processor_class.return_value = mock_processor

@@ -2,15 +2,14 @@
 Simple pytest configuration for the crypto sentiment agent tests.
 """
 
-import pytest
 import os
-import tempfile
-from datetime import datetime
+
+import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+
 # from moto import mock_aws  # Will be enabled when moto is installed
 
 # Set test database URL and environment variables before importing the app
@@ -26,7 +25,6 @@ os.environ["S3_BUCKET_NAME"] = "test_bucket"
 
 from src.database import Base, get_db
 from src.main import app
-from src.models import NewsArticle
 
 
 @pytest.fixture(scope="function")

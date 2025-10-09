@@ -2,21 +2,23 @@
 S3 PDF processor for downloading and processing crypto news PDFs.
 """
 
-import boto3
+import io
 import json
 import logging
-from typing import List, Dict, Any
 from datetime import datetime
+from typing import Any
+
+import boto3
 import PyPDF2
-import io
 from decouple import config
-from sqlalchemy.orm import Session
+
 from database import SessionLocal
 from models import NewsArticle
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class S3Processor:
     """Service for processing PDFs from S3 bucket."""
@@ -30,19 +32,19 @@ class S3Processor:
 
         # Initialize S3 client
         self.s3_client = boto3.client(
-            's3',
+            "s3",
             aws_access_key_id=self.aws_access_key,
             aws_secret_access_key=self.aws_secret_key,
-            region_name=self.aws_region
+            region_name=self.aws_region,
         )
 
         # Load news sources configuration
         self.news_sources = self._load_news_sources()
 
-    def _load_news_sources(self) -> Dict[str, Any]:
+    def _load_news_sources(self) -> dict[str, Any]:
         """Load news sources configuration from JSON file."""
         try:
-            with open('/app/news_sources.json', 'r') as f:
+            with open("/app/news_sources.json") as f:
                 return json.load(f)
         except FileNotFoundError:
             logger.error("news_sources.json not found")
@@ -66,7 +68,7 @@ class S3Processor:
         """Download PDF from S3 bucket."""
         try:
             response = self.s3_client.get_object(Bucket=bucket, Key=key)
-            return response['Body'].read()
+            return response["Body"].read()
         except Exception as e:
             logger.error(f"Error downloading PDF from S3: {e}")
             raise
@@ -79,12 +81,16 @@ class S3Processor:
             logger.warning(f"Could not parse date: {date_str}")
             return datetime.now()
 
-    def process_single_article(self, article_config: Dict[str, Any]) -> NewsArticle:
+    def process_single_article(self, article_config: dict[str, Any]) -> NewsArticle:
         """Process a single article from S3."""
         try:
             # Download PDF from instructor's bucket
-            instructor_bucket = self.news_sources.get("s3_bucket", "crypto-news-pdfs-sep-2025")
-            pdf_content = self._download_pdf_from_s3(instructor_bucket, article_config["s3_key"])
+            instructor_bucket = self.news_sources.get(
+                "s3_bucket", "crypto-news-pdfs-sep-2025"
+            )
+            pdf_content = self._download_pdf_from_s3(
+                instructor_bucket, article_config["s3_key"]
+            )
 
             # Extract text content
             content = self._extract_text_from_pdf(pdf_content)
@@ -95,22 +101,26 @@ class S3Processor:
                 content=content,
                 source=article_config["source"],
                 url=None,  # No URL for PDF articles
-                published_at=self._parse_published_date(article_config["published_date"]),
+                published_at=self._parse_published_date(
+                    article_config["published_date"]
+                ),
                 tokens_mentioned=article_config["tokens"],
                 sentiment=None,  # Will be filled by sentiment analysis
                 confidence_score=None,
                 s3_bucket_source=instructor_bucket,
-                s3_key_source=article_config["s3_key"]
+                s3_key_source=article_config["s3_key"],
             )
 
             logger.info(f"Processed article: {article_config['title']}")
             return article
 
         except Exception as e:
-            logger.error(f"Error processing article {article_config.get('title', 'Unknown')}: {e}")
+            logger.error(
+                f"Error processing article {article_config.get('title', 'Unknown')}: {e}"
+            )
             raise
 
-    def process_all_articles(self) -> List[NewsArticle]:
+    def process_all_articles(self) -> list[NewsArticle]:
         """Process all articles from the news sources configuration."""
         articles = []
 
@@ -125,7 +135,7 @@ class S3Processor:
         logger.info(f"Successfully processed {len(articles)} articles")
         return articles
 
-    def save_articles_to_db(self, articles: List[NewsArticle]) -> int:
+    def save_articles_to_db(self, articles: list[NewsArticle]) -> int:
         """Save processed articles to database."""
         db = SessionLocal()
         saved_count = 0
@@ -133,10 +143,14 @@ class S3Processor:
         try:
             for article in articles:
                 # Check if article already exists (by title and source)
-                existing = db.query(NewsArticle).filter(
-                    NewsArticle.title == article.title,
-                    NewsArticle.source == article.source
-                ).first()
+                existing = (
+                    db.query(NewsArticle)
+                    .filter(
+                        NewsArticle.title == article.title,
+                        NewsArticle.source == article.source,
+                    )
+                    .first()
+                )
 
                 if not existing:
                     db.add(article)
