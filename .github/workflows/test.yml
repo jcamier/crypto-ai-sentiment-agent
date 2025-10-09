@@ -22,7 +22,7 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run tests
-        run: pytest tests/ -v
+        run: PYTHONPATH=src pytest tests/ -v
 
       - name: Run linting
         run: |
