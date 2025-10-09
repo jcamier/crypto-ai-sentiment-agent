@@ -2,8 +2,9 @@
 SQLAlchemy models for the crypto sentiment agent.
 """
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ARRAY
+from sqlalchemy import ARRAY, Column, DateTime, Float, Integer, String, Text
 from sqlalchemy.sql import func
+
 from database import Base
 
 
@@ -11,7 +12,7 @@ class NewsArticle(Base):
     """Model for storing crypto news articles."""
 
     __tablename__ = "news_articles"
-    __table_args__ = {'extend_existing': True}
+    __table_args__ = {"extend_existing": True}
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(Text, nullable=False)
@@ -37,11 +38,13 @@ class NewsArticle(Base):
             "content": self.content,
             "source": self.source,
             "url": self.url,
-            "published_at": self.published_at.isoformat() if self.published_at else None,
+            "published_at": (
+                self.published_at.isoformat() if self.published_at else None
+            ),
             "tokens_mentioned": self.tokens_mentioned or [],
             "sentiment": self.sentiment,
             "confidence_score": self.confidence_score,
             "s3_bucket_source": self.s3_bucket_source,
             "s3_key_source": self.s3_key_source,
-            "created_at": self.created_at.isoformat() if self.created_at else None
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }

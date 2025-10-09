@@ -3,19 +3,19 @@ Crypto News & Sentiment Agent - FastAPI Application
 Main entry point for the crypto sentiment analysis service.
 """
 
-from fastapi import FastAPI, Depends, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from typing import List, Optional
+import logging
 from contextlib import asynccontextmanager
+
 import uvicorn
 from decouple import config
-import logging
+from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
 
 from database import get_db, init_db, setup_pgvector
 from models import NewsArticle
-from services.s3_processor import process_s3_pdfs
 from services.coingecko_service import fetch_latest_news
+from services.s3_processor import process_s3_pdfs
 from services.sentiment_analyzer import analyze_all_articles
 
 # Configure logging
@@ -45,7 +45,7 @@ app = FastAPI(
     title="Crypto News & Sentiment Agent",
     description="Agentic AI workflow for crypto news sentiment analysis",
     version="0.1.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Add CORS middleware
@@ -56,6 +56,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/")
 async def root():
@@ -69,25 +70,24 @@ async def root():
             "sentiment": "/api/sentiment/",
             "process_s3": "/api/process/s3/",
             "fetch_live": "/api/fetch/live/",
-            "analyze": "/api/analyze/sentiment/"
-        }
+            "analyze": "/api/analyze/sentiment/",
+        },
     }
+
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint for Docker health checks."""
-    return {
-        "status": "healthy",
-        "service": "crypto-sentiment-agent"
-    }
+    return {"status": "healthy", "service": "crypto-sentiment-agent"}
+
 
 @app.get("/api/news/")
 async def get_news(
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    sentiment: Optional[str] = Query(None, pattern="^(bullish|bearish|neutral)$"),
-    token: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
+    sentiment: str | None = Query(None, pattern="^(bullish|bearish|neutral)$"),
+    token: str | None = Query(None),
+    db: Session = Depends(get_db),
 ):
     """Get processed news articles from database."""
     try:
@@ -104,24 +104,29 @@ async def get_news(
         total_count = query.count()
 
         # Apply pagination
-        articles = query.order_by(NewsArticle.created_at.desc()).offset(offset).limit(limit).all()
+        articles = (
+            query.order_by(NewsArticle.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
 
         return {
             "articles": [article.to_dict() for article in articles],
             "total_count": total_count,
             "limit": limit,
-            "offset": offset
+            "offset": offset,
         }
 
     except Exception as e:
         logger.error(f"Error fetching news: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching news articles")
+        raise HTTPException(
+            status_code=500, detail="Error fetching news articles"
+        ) from None
+
 
 @app.get("/api/sentiment/")
-async def get_sentiment(
-    token: Optional[str] = Query(None),
-    db: Session = Depends(get_db)
-):
+async def get_sentiment(token: str | None = Query(None), db: Session = Depends(get_db)):
     """Get sentiment analysis results aggregated by token."""
     try:
         query = db.query(NewsArticle).filter(NewsArticle.sentiment.isnot(None))
@@ -144,14 +149,20 @@ async def get_sentiment(
                 total_confidence += article.confidence_score
 
             # Count token mentions
-            for token_mentioned in (article.tokens_mentioned or []):
-                token_mentions[token_mentioned] = token_mentions.get(token_mentioned, 0) + 1
+            for token_mentioned in article.tokens_mentioned or []:
+                token_mentions[token_mentioned] = (
+                    token_mentions.get(token_mentioned, 0) + 1
+                )
 
         total_articles = len(articles)
         avg_confidence = total_confidence / total_articles if total_articles > 0 else 0
 
         # Determine overall sentiment
-        overall_sentiment = max(sentiment_counts, key=sentiment_counts.get) if total_articles > 0 else "neutral"
+        overall_sentiment = (
+            max(sentiment_counts, key=sentiment_counts.get)
+            if total_articles > 0
+            else "neutral"
+        )
 
         return {
             "overall_sentiment": overall_sentiment,
@@ -159,38 +170,41 @@ async def get_sentiment(
             "total_articles": total_articles,
             "average_confidence": round(avg_confidence, 3),
             "token_mentions": token_mentions,
-            "filtered_by_token": token
+            "filtered_by_token": token,
         }
 
     except Exception as e:
         logger.error(f"Error fetching sentiment: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching sentiment analysis")
+        raise HTTPException(
+            status_code=500, detail="Error fetching sentiment analysis"
+        ) from None
+
 
 @app.post("/api/process/s3/")
 async def process_s3_endpoint():
     """Process S3 PDFs and store in database."""
     try:
         process_s3_pdfs()
-        return {
-            "message": "S3 PDFs processed successfully",
-            "status": "completed"
-        }
+        return {"message": "S3 PDFs processed successfully", "status": "completed"}
     except Exception as e:
         logger.error(f"Error processing S3 PDFs: {e}")
-        raise HTTPException(status_code=500, detail=f"Error processing S3 PDFs: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error processing S3 PDFs: {str(e)}"
+        ) from None
+
 
 @app.post("/api/fetch/live/")
 async def fetch_live_news():
     """Fetch latest crypto news from CoinGecko API."""
     try:
         await fetch_latest_news()
-        return {
-            "message": "Live news fetched successfully",
-            "status": "completed"
-        }
+        return {"message": "Live news fetched successfully", "status": "completed"}
     except Exception as e:
         logger.error(f"Error fetching live news: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching live news: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching live news: {str(e)}"
+        ) from None
+
 
 @app.post("/api/analyze/sentiment/")
 async def analyze_sentiment_endpoint():
@@ -199,33 +213,45 @@ async def analyze_sentiment_endpoint():
         analyze_all_articles()
         return {
             "message": "Sentiment analysis completed successfully",
-            "status": "completed"
+            "status": "completed",
         }
     except Exception as e:
         logger.error(f"Error analyzing sentiment: {e}")
-        raise HTTPException(status_code=500, detail=f"Error analyzing sentiment: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error analyzing sentiment: {str(e)}"
+        ) from None
+
 
 @app.get("/api/stats/")
 async def get_stats(db: Session = Depends(get_db)):
     """Get database statistics."""
     try:
         total_articles = db.query(NewsArticle).count()
-        articles_with_sentiment = db.query(NewsArticle).filter(NewsArticle.sentiment.isnot(None)).count()
+        articles_with_sentiment = (
+            db.query(NewsArticle).filter(NewsArticle.sentiment.isnot(None)).count()
+        )
         articles_without_sentiment = total_articles - articles_with_sentiment
 
         # Count by source
-        sources = db.query(NewsArticle.source, db.func.count(NewsArticle.id)).group_by(NewsArticle.source).all()
+        sources = (
+            db.query(NewsArticle.source, db.func.count(NewsArticle.id))
+            .group_by(NewsArticle.source)
+            .all()
+        )
 
         return {
             "total_articles": total_articles,
             "articles_with_sentiment": articles_with_sentiment,
             "articles_without_sentiment": articles_without_sentiment,
-            "sources": dict(sources)
+            "sources": dict(sources),
         }
 
     except Exception as e:
         logger.error(f"Error fetching stats: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching statistics")
+        raise HTTPException(
+            status_code=500, detail="Error fetching statistics"
+        ) from None
+
 
 if __name__ == "__main__":
     # Get configuration from environment
@@ -234,9 +260,4 @@ if __name__ == "__main__":
     debug = config("DEBUG", default=True, cast=bool)
 
     # Run the application
-    uvicorn.run(
-        "main:app",
-        host=host,
-        port=port,
-        reload=debug
-    )
+    uvicorn.run("main:app", host=host, port=port, reload=debug)
