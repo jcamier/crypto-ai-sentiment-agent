@@ -43,6 +43,10 @@ jobs:
           DB_NAME: crypto_news
           DB_USER: postgres
           DB_PASS: postgres
+          AWS_ACCESS_KEY_ID: test_key
+          AWS_SECRET_ACCESS_KEY: test_secret
+          COINGECKO_API_KEY: test_api_key
+          S3_BUCKET_NAME: test_bucket
         run: PYTHONPATH=src pytest tests/ -v
 
       - name: Run linting
