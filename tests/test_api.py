@@ -8,13 +8,6 @@ from unittest.mock import Mock, patch
 from src.models import NewsArticle
 
 
-@pytest.fixture
-def test_client():
-    """Create a test client."""
-    from src.main import app
-    return TestClient(app)
-
-
 def test_root_endpoint(test_client):
     """Test root endpoint."""
     response = test_client.get("/")
@@ -34,7 +27,7 @@ def test_health_endpoint(test_client):
     assert data["status"] == "healthy"
 
 
-def test_get_news_endpoint(test_client):
+def test_get_news_endpoint(test_client, sample_news_article):
     """Test getting news articles."""
     response = test_client.get("/api/news/")
 
@@ -42,9 +35,12 @@ def test_get_news_endpoint(test_client):
     data = response.json()
     assert "articles" in data
     assert "total_count" in data
+    assert data["total_count"] == 1
+    assert len(data["articles"]) == 1
+    assert data["articles"][0]["title"] == "Bitcoin Price Surges to New Highs"
 
 
-def test_get_sentiment_endpoint(test_client):
+def test_get_sentiment_endpoint(test_client, sample_news_article):
     """Test getting sentiment analysis."""
     response = test_client.get("/api/sentiment/")
 
@@ -52,6 +48,8 @@ def test_get_sentiment_endpoint(test_client):
     data = response.json()
     assert "overall_sentiment" in data
     assert "sentiment_distribution" in data
+    assert data["overall_sentiment"] == "bullish"
+    assert data["sentiment_distribution"]["bullish"] == 1
 
 
 def test_process_s3_endpoint(test_client):
