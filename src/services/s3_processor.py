@@ -12,8 +12,8 @@ import boto3
 import PyPDF2
 from decouple import config
 
-from database import SessionLocal
-from models import NewsArticle
+from ..database import SessionLocal
+from ..models import NewsArticle
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

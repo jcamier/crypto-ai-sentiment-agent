@@ -9,8 +9,8 @@ from typing import Any
 import httpx
 from decouple import config
 
-from database import SessionLocal
-from models import NewsArticle
+from ..database import SessionLocal
+from ..models import NewsArticle
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

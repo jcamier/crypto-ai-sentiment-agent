@@ -15,11 +15,11 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
-from database import get_db, init_db, setup_pgvector
-from models import NewsArticle
-from services.coingecko_service import fetch_latest_news
-from services.s3_processor import process_s3_pdfs
-from services.sentiment_analyzer import analyze_all_articles
+from .database import get_db, init_db, setup_pgvector
+from .models import NewsArticle
+from .services.coingecko_service import fetch_latest_news
+from .services.s3_processor import process_s3_pdfs
+from .services.sentiment_analyzer import analyze_all_articles
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

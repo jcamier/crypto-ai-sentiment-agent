@@ -37,7 +37,16 @@ def test_process_s3_endpoint(test_client):
         mock_processor.process_all_articles.return_value = []
         mock_processor_class.return_value = mock_processor
 
-        response = test_client.post("/api/process/s3/")
+        # Set the API key environment variable for the test
+        import os
+        os.environ["API_KEY"] = "crypto-agent-secret-key"
+
+        response = test_client.post("/api/process/s3/?api_key=crypto-agent-secret-key")
+
+        # Debug the response
+        if response.status_code != 200:
+            print(f"Response status: {response.status_code}")
+            print(f"Response body: {response.text}")
 
         # Should succeed with mocked processor
         assert response.status_code == 200
