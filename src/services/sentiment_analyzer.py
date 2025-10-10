@@ -9,8 +9,8 @@ from typing import Any
 import boto3
 from decouple import config
 
-from ..database import SessionLocal
-from ..models import NewsArticle
+from src.database import SessionLocal
+from src.models import NewsArticle
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
