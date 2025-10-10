@@ -61,6 +61,7 @@ services:
       - S3_BUCKET_NAME=\${S3_BUCKET_NAME}
       - BEDROCK_MODEL_ID=\${BEDROCK_MODEL_ID}
       - COINGECKO_API_KEY=\${COINGECKO_API_KEY}
+      - API_KEY=\${API_KEY:-crypto-agent-secret-key}
       - ENVIRONMENT=\${ENVIRONMENT:-production}
       - LOG_LEVEL=\${LOG_LEVEL:-INFO}
     depends_on:
@@ -88,6 +89,9 @@ BEDROCK_MODEL_ID=anthropic.claude-3-sonnet-20240229-v1:0
 
 # CoinGecko API
 COINGECKO_API_KEY=your-api-key
+
+# API Security
+API_KEY=crypto-agent-secret-key
 
 # Application Configuration
 ENVIRONMENT=production

@@ -156,3 +156,6 @@ Sources include CoinDesk, Decrypt, Cointelegraph, The Block, CCN, and CoinMarket
 - Configure CORS appropriately for production
 - Consider using AWS Secrets Manager for production deployments
 
+## Use api key generator to create an api key for your project:
+https://codepen.io/corenominal/pen/rxOmMJ
+
