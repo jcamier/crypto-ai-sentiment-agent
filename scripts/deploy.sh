@@ -39,7 +39,8 @@ if ! command -v aws &> /dev/null; then
 fi
 
 # Create application directory if it doesn't exist
-mkdir -p /opt/crypto-agent
+sudo mkdir -p /opt/crypto-agent
+sudo chown ubuntu:ubuntu /opt/crypto-agent
 cd /opt/crypto-agent
 
 # Login to ECR
