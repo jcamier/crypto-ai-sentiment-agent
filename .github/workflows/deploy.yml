@@ -1,16 +1,16 @@
 name: Deploy Crypto Agent
 
 on:
-  # push:
-  #   branches: [production]  # Disabled automatic deployment
+  push:
+    branches: [production]  # Deploy when code is pushed to production branch
   pull_request:
     branches: [main, production]
-  workflow_dispatch:  # Manual trigger only
+  workflow_dispatch:  # Manual trigger
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'  # Only manual triggers
+    if: github.ref == 'refs/heads/production' || github.event_name == 'workflow_dispatch'
 
     steps:
       - uses: actions/checkout@v4
@@ -58,4 +58,4 @@ jobs:
       - name: Health Check
         run: |
           sleep 30
-          curl -f https://${{ secrets.CLOUDFRONT_DOMAIN }}/health || exit 1
+          curl -f http://${{ secrets.EC2_HOST }}:8000/health || exit 1
