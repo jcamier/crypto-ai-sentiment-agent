@@ -2,7 +2,7 @@
 SQLAlchemy models for the crypto sentiment agent.
 """
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text, JSON
+from sqlalchemy import JSON, Column, DateTime, Float, Integer, String, Text
 from sqlalchemy.sql import func
 
 from src.database import Base
