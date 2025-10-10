@@ -8,8 +8,39 @@ IMAGE_NAME=${1:-"crypto-sentiment-agent:latest"}
 
 echo "🚀 Starting deployment of $IMAGE_NAME..."
 
+# Install Docker and AWS CLI if not present
+if ! command -v docker &> /dev/null; then
+    echo "📦 Installing Docker..."
+    sudo apt update
+    sudo apt install -y docker.io docker-compose
+    sudo usermod -aG docker ubuntu
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    echo "⚠️  Docker installed. You may need to log out and back in for permissions to take effect."
+fi
+
+# Ensure ubuntu user is in docker group and restart docker if needed
+if ! groups ubuntu | grep -q docker; then
+    echo "📦 Adding ubuntu user to docker group..."
+    sudo usermod -aG docker ubuntu
+    sudo systemctl restart docker
+fi
+
+# Test docker permissions
+if ! docker ps &> /dev/null; then
+    echo "⚠️  Docker permission issue detected. Trying to fix..."
+    sudo chmod 666 /var/run/docker.sock
+    sudo systemctl restart docker
+fi
+
+if ! command -v aws &> /dev/null; then
+    echo "📦 Installing AWS CLI..."
+    sudo apt install -y awscli
+fi
+
 # Create application directory if it doesn't exist
-mkdir -p /opt/crypto-agent
+sudo mkdir -p /opt/crypto-agent
+sudo chown ubuntu:ubuntu /opt/crypto-agent
 cd /opt/crypto-agent
 
 # Login to ECR
@@ -35,7 +66,7 @@ services:
     environment:
       POSTGRES_DB: \${DB_NAME:-crypto_news}
       POSTGRES_USER: \${DB_USER:-crypto}
-      POSTGRES_PASSWORD: \${DB_PASS:-crypToCurDBpass2025!}
+      POSTGRES_PASSWORD: \${DB_PASS}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -51,10 +82,10 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://\${DB_USER:-crypto}:\${DB_PASS:-crypToCurDBpass2025!}@db:5432/\${DB_NAME:-crypto_news}
+      - DATABASE_URL=postgresql://\${DB_USER:-crypto}:\${DB_PASS}@db:5432/\${DB_NAME:-crypto_news}
       - DB_NAME=\${DB_NAME:-crypto_news}
       - DB_USER=\${DB_USER:-crypto}
-      - DB_PASS=\${DB_PASS:-crypToCurDBpass2025!}
+      - DB_PASS=\${DB_PASS}
       - AWS_ACCESS_KEY_ID=\${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=\${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=\${AWS_REGION:-us-east-1}
@@ -73,32 +104,31 @@ volumes:
   postgres_data:
 EOF
 
-# Create .env file if it doesn't exist
-if [ ! -f .env ]; then
-    echo "📝 Creating .env file..."
-    cat > .env << EOF
+# Create .env file from environment variables (no hardcoded secrets)
+echo "📝 Creating .env file from environment variables..."
+cat > .env << EOF
 # Database Configuration
-DB_NAME=crypto_news
-DB_USER=crypto
-DB_PASS=crypToCurDBpass2025!
+DB_NAME=${DB_NAME:-crypto_news}
+DB_USER=${DB_USER:-crypto}
+DB_PASS=${DB_PASS}
 
 # AWS Configuration
-AWS_REGION=us-east-1
-S3_BUCKET_NAME=your-bucket-name
-BEDROCK_MODEL_ID=anthropic.claude-3-sonnet-20240229-v1:0
+AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+AWS_REGION=${AWS_REGION:-us-east-1}
+S3_BUCKET_NAME=${S3_BUCKET_NAME}
+BEDROCK_MODEL_ID=${BEDROCK_MODEL_ID:-anthropic.claude-3-sonnet-20240229-v1:0}
 
 # CoinGecko API
-COINGECKO_API_KEY=your-api-key
+COINGECKO_API_KEY=${COINGECKO_API_KEY}
 
 # API Security
-API_KEY=crypto-agent-secret-key
+API_KEY=${API_KEY:-crypto-agent-secret-key}
 
 # Application Configuration
-ENVIRONMENT=production
-LOG_LEVEL=INFO
+ENVIRONMENT=${ENVIRONMENT:-production}
+LOG_LEVEL=${LOG_LEVEL:-INFO}
 EOF
-    echo "⚠️  Please update .env file with your actual credentials!"
-fi
 
 # Start the application
 echo "🚀 Starting application..."
