@@ -2,10 +2,10 @@
 SQLAlchemy models for the crypto sentiment agent.
 """
 
-from sqlalchemy import ARRAY, Column, DateTime, Float, Integer, String, Text
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text, JSON
 from sqlalchemy.sql import func
 
-from database import Base
+from src.database import Base
 
 
 class NewsArticle(Base):
@@ -20,7 +20,7 @@ class NewsArticle(Base):
     source = Column(String(255))
     url = Column(Text)
     published_at = Column(DateTime)
-    tokens_mentioned = Column(ARRAY(String))  # Array of crypto tokens mentioned
+    tokens_mentioned = Column(JSON)  # Array of crypto tokens mentioned
     sentiment = Column(String(20))  # bullish, bearish, neutral
     confidence_score = Column(Float)
     s3_bucket_source = Column(String(255))  # S3 bucket where article was sourced from
