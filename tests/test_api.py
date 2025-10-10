@@ -39,6 +39,7 @@ def test_process_s3_endpoint(test_client):
 
         # Set the API key environment variable for the test
         import os
+
         os.environ["API_KEY"] = "crypto-agent-secret-key"
 
         response = test_client.post("/api/process/s3/?api_key=crypto-agent-secret-key")
