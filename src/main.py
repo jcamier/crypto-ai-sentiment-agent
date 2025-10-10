@@ -8,8 +8,11 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from decouple import config
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 from sqlalchemy.orm import Session
 
 from database import get_db, init_db, setup_pgvector
@@ -21,6 +24,17 @@ from services.sentiment_analyzer import analyze_all_articles
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Rate limiter setup
+limiter = Limiter(key_func=get_remote_address)
+
+
+def verify_api_key(api_key: str = Query(..., description="API key for authentication")):
+    """Verify API key for protected endpoints."""
+    expected_key = config("API_KEY", default="crypto-agent-secret-key")
+    if api_key != expected_key:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    return api_key
 
 
 @asynccontextmanager
@@ -47,6 +61,10 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+# Add rate limiter to app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add CORS middleware
 app.add_middleware(
@@ -82,7 +100,10 @@ async def health_check():
 
 
 @app.get("/api/news/")
+@limiter.limit("30/minute")
 async def get_news(
+    request: Request,
+    api_key: str = Depends(verify_api_key),
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
     sentiment: str | None = Query(None, pattern="^(bullish|bearish|neutral)$"),
@@ -126,7 +147,13 @@ async def get_news(
 
 
 @app.get("/api/sentiment/")
-async def get_sentiment(token: str | None = Query(None), db: Session = Depends(get_db)):
+@limiter.limit("30/minute")
+async def get_sentiment(
+    request: Request,
+    api_key: str = Depends(verify_api_key),
+    token: str | None = Query(None),
+    db: Session = Depends(get_db),
+):
     """Get sentiment analysis results aggregated by token."""
     try:
         query = db.query(NewsArticle).filter(NewsArticle.sentiment.isnot(None))
@@ -181,7 +208,11 @@ async def get_sentiment(token: str | None = Query(None), db: Session = Depends(g
 
 
 @app.post("/api/process/s3/")
-async def process_s3_endpoint():
+@limiter.limit("5/minute")
+async def process_s3_endpoint(
+    request: Request,
+    api_key: str = Depends(verify_api_key),
+):
     """Process S3 PDFs and store in database."""
     try:
         process_s3_pdfs()
@@ -194,7 +225,11 @@ async def process_s3_endpoint():
 
 
 @app.post("/api/fetch/live/")
-async def fetch_live_news():
+@limiter.limit("5/minute")
+async def fetch_live_news(
+    request: Request,
+    api_key: str = Depends(verify_api_key),
+):
     """Fetch latest crypto news from CoinGecko API."""
     try:
         await fetch_latest_news()
@@ -207,7 +242,11 @@ async def fetch_live_news():
 
 
 @app.post("/api/analyze/sentiment/")
-async def analyze_sentiment_endpoint():
+@limiter.limit("5/minute")
+async def analyze_sentiment_endpoint(
+    request: Request,
+    api_key: str = Depends(verify_api_key),
+):
     """Analyze sentiment for all articles without sentiment data."""
     try:
         analyze_all_articles()
@@ -223,7 +262,12 @@ async def analyze_sentiment_endpoint():
 
 
 @app.get("/api/stats/")
-async def get_stats(db: Session = Depends(get_db)):
+@limiter.limit("30/minute")
+async def get_stats(
+    request: Request,
+    api_key: str = Depends(verify_api_key),
+    db: Session = Depends(get_db),
+):
     """Get database statistics."""
     try:
         total_articles = db.query(NewsArticle).count()
