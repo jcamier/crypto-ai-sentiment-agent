@@ -65,6 +65,7 @@ shell:
 lint:
 	ruff check src/
 	ruff check tests/
+	black --check src/ tests/
 
 format:
 	black src/ tests/
