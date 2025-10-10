@@ -2,18 +2,20 @@
 Amazon Bedrock sentiment analysis service for crypto news.
 """
 
-import boto3
 import json
 import logging
-from typing import Dict, Any, List, Tuple
+from typing import Any
+
+import boto3
 from decouple import config
-from sqlalchemy.orm import Session
-from database import SessionLocal
-from models import NewsArticle
+
+from src.database import SessionLocal
+from src.models import NewsArticle
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class SentimentAnalyzer:
     """Service for analyzing sentiment of crypto news using Amazon Bedrock."""
@@ -23,14 +25,16 @@ class SentimentAnalyzer:
         self.aws_access_key = config("AWS_ACCESS_KEY_ID")
         self.aws_secret_key = config("AWS_SECRET_ACCESS_KEY")
         self.aws_region = config("AWS_BEDROCK_REGION", default="us-east-1")
-        self.model_id = config("BEDROCK_MODEL_ID", default="anthropic.claude-3-haiku-20240307-v1:0")
+        self.model_id = config(
+            "BEDROCK_MODEL_ID", default="anthropic.claude-3-haiku-20240307-v1:0"
+        )
 
         # Initialize Bedrock client
         self.bedrock_client = boto3.client(
-            'bedrock-runtime',
+            "bedrock-runtime",
             aws_access_key_id=self.aws_access_key,
             aws_secret_access_key=self.aws_secret_key,
-            region_name=self.aws_region
+            region_name=self.aws_region,
         )
 
     def _create_sentiment_prompt(self, title: str, content: str) -> str:
@@ -62,19 +66,19 @@ Guidelines:
 Respond only with valid JSON, no additional text.
 """
 
-    def _parse_bedrock_response(self, response_body: str) -> Dict[str, Any]:
+    def _parse_bedrock_response(self, response_body: str) -> dict[str, Any]:
         """Parse Bedrock response and extract sentiment data."""
         try:
             # Extract JSON from response
             response_text = response_body.strip()
 
             # Try to find JSON in the response
-            if response_text.startswith('{') and response_text.endswith('}'):
+            if response_text.startswith("{") and response_text.endswith("}"):
                 return json.loads(response_text)
             else:
                 # Look for JSON within the response
-                start_idx = response_text.find('{')
-                end_idx = response_text.rfind('}') + 1
+                start_idx = response_text.find("{")
+                end_idx = response_text.rfind("}") + 1
                 if start_idx != -1 and end_idx > start_idx:
                     json_str = response_text[start_idx:end_idx]
                     return json.loads(json_str)
@@ -88,7 +92,7 @@ Respond only with valid JSON, no additional text.
                 "sentiment": "neutral",
                 "confidence_score": 0.5,
                 "reasoning": "Failed to parse response",
-                "tokens_mentioned": []
+                "tokens_mentioned": [],
             }
         except Exception as e:
             logger.error(f"Error parsing response: {e}")
@@ -96,10 +100,10 @@ Respond only with valid JSON, no additional text.
                 "sentiment": "neutral",
                 "confidence_score": 0.5,
                 "reasoning": "Error in analysis",
-                "tokens_mentioned": []
+                "tokens_mentioned": [],
             }
 
-    def analyze_sentiment(self, title: str, content: str) -> Dict[str, Any]:
+    def analyze_sentiment(self, title: str, content: str) -> dict[str, Any]:
         """Analyze sentiment of a news article using Bedrock."""
         try:
             # Create prompt
@@ -109,29 +113,26 @@ Respond only with valid JSON, no additional text.
             request_body = {
                 "anthropic_version": "bedrock-2023-05-31",
                 "max_tokens": 1000,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ]
+                "messages": [{"role": "user", "content": prompt}],
             }
 
             # Call Bedrock
             response = self.bedrock_client.invoke_model(
                 modelId=self.model_id,
                 body=json.dumps(request_body),
-                contentType="application/json"
+                contentType="application/json",
             )
 
             # Parse response
-            response_body = json.loads(response['body'].read())
-            content_text = response_body['content'][0]['text']
+            response_body = json.loads(response["body"].read())
+            content_text = response_body["content"][0]["text"]
 
             # Parse the sentiment analysis result
             sentiment_data = self._parse_bedrock_response(content_text)
 
-            logger.info(f"Sentiment analysis completed: {sentiment_data['sentiment']} (confidence: {sentiment_data['confidence_score']})")
+            logger.info(
+                f"Sentiment analysis completed: {sentiment_data['sentiment']} (confidence: {sentiment_data['confidence_score']})"
+            )
             return sentiment_data
 
         except Exception as e:
@@ -140,14 +141,16 @@ Respond only with valid JSON, no additional text.
                 "sentiment": "neutral",
                 "confidence_score": 0.5,
                 "reasoning": f"Analysis failed: {str(e)}",
-                "tokens_mentioned": []
+                "tokens_mentioned": [],
             }
 
     def analyze_article(self, article: NewsArticle) -> NewsArticle:
         """Analyze sentiment of a single article and update it."""
         try:
             # Perform sentiment analysis
-            sentiment_data = self.analyze_sentiment(article.title, article.content or "")
+            sentiment_data = self.analyze_sentiment(
+                article.title, article.content or ""
+            )
 
             # Update article with sentiment data
             article.sentiment = sentiment_data["sentiment"]
@@ -159,7 +162,9 @@ Respond only with valid JSON, no additional text.
                 new_tokens = set(sentiment_data["tokens_mentioned"])
                 article.tokens_mentioned = list(existing_tokens.union(new_tokens))
 
-            logger.info(f"Updated article '{article.title[:50]}...' with sentiment: {article.sentiment}")
+            logger.info(
+                f"Updated article '{article.title[:50]}...' with sentiment: {article.sentiment}"
+            )
             return article
 
         except Exception as e:
@@ -169,7 +174,7 @@ Respond only with valid JSON, no additional text.
             article.confidence_score = 0.5
             return article
 
-    def analyze_articles_batch(self, articles: List[NewsArticle]) -> List[NewsArticle]:
+    def analyze_articles_batch(self, articles: list[NewsArticle]) -> list[NewsArticle]:
         """Analyze sentiment for a batch of articles."""
         analyzed_articles = []
 
@@ -186,7 +191,7 @@ Respond only with valid JSON, no additional text.
 
         return analyzed_articles
 
-    def update_articles_in_db(self, articles: List[NewsArticle]) -> int:
+    def update_articles_in_db(self, articles: list[NewsArticle]) -> int:
         """Update articles in database with sentiment analysis results."""
         db = SessionLocal()
         updated_count = 0
@@ -217,9 +222,7 @@ def analyze_all_articles():
         analyzer = SentimentAnalyzer()
 
         # Get articles without sentiment analysis
-        articles = db.query(NewsArticle).filter(
-            NewsArticle.sentiment.is_(None)
-        ).all()
+        articles = db.query(NewsArticle).filter(NewsArticle.sentiment.is_(None)).all()
 
         if not articles:
             logger.info("No articles found that need sentiment analysis")

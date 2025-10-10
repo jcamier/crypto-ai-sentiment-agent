@@ -2,6 +2,126 @@
 Simple pytest configuration for the crypto sentiment agent tests.
 """
 
+import os
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
+# from moto import mock_aws  # Will be enabled when moto is installed
+
+# Set test database URL and environment variables before importing the app
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+os.environ["DB_NAME"] = "test_crypto_news"
+os.environ["DB_USER"] = "test_user"
+os.environ["DB_PASS"] = "test_pass"
+# Set required environment variables to avoid config errors
+os.environ["AWS_ACCESS_KEY_ID"] = "test_key"
+os.environ["AWS_SECRET_ACCESS_KEY"] = "test_secret"
+os.environ["COINGECKO_API_KEY"] = "test_api_key"
+os.environ["S3_BUCKET_NAME"] = "test_bucket"
+
+from src.database import Base, get_db
+from src.main import app
+
+
+@pytest.fixture(scope="function")
+def test_db():
+    """Create a test database for each test."""
+    # Create in-memory SQLite database
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+
+    # Create all tables
+    Base.metadata.create_all(bind=engine)
+
+    # Create session
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+    def override_get_db():
+        try:
+            db = TestingSessionLocal()
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    # Create a test session for the fixture
+    test_session = TestingSessionLocal()
+
+    yield test_session
+
+    # Clean up
+    test_session.close()
+    Base.metadata.drop_all(bind=engine)
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def test_client(test_db):
+    """Create a test client with database dependency overridden."""
+    return TestClient(app)
+
+
+# Sample news article fixture removed - database tests removed for now
+
+
+# AWS mocking fixtures - will be enabled when moto is installed
+# @pytest.fixture
+# def mock_aws_services():
+#     """Mock AWS services using Moto."""
+#     with mock_aws():
+#         yield
+#
+#
+# @pytest.fixture
+# def mock_s3_bucket(mock_aws_services):
+#     """Create a mock S3 bucket with test PDF content."""
+#     import boto3
+#     from io import BytesIO
+#
+#     # Create S3 client
+#     s3_client = boto3.client('s3', region_name='us-east-1')
+#
+#     # Create test bucket
+#     bucket_name = 'test-crypto-news-bucket'
+#     s3_client.create_bucket(Bucket=bucket_name)
+#
+#     # Create a mock PDF content
+#     mock_pdf_content = b"Mock PDF content for testing"
+#
+#     # Upload test PDF
+#     s3_client.put_object(
+#         Bucket=bucket_name,
+#         Key='test-article.pdf',
+#         Body=mock_pdf_content,
+#         ContentType='application/pdf'
+#     )
+#
+#     return bucket_name
+#
+#
+# @pytest.fixture
+# def mock_bedrock_client(mock_aws_services):
+#     """Mock Bedrock client for sentiment analysis."""
+#     import boto3
+#     from io import BytesIO
+#
+#     # Create Bedrock client
+#     bedrock_client = boto3.client('bedrock-runtime', region_name='us-east-1')
+#
+#     # Mock the invoke_model method
+#     def mock_invoke_model(*args, **kwargs):
+#         return {
+#             'body': BytesIO(b'{"content": [{"text": "{\\"sentiment\\": \\"bullish\\", \\"confidence\\": 0.85}"}]}'),
+#             'contentType': 'application/json'
+#         }
+#
+#     bedrock_client.invoke_model = mock_invoke_model
+#     return bedrock_client

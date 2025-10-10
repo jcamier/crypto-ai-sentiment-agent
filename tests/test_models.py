@@ -2,8 +2,8 @@
 Tests for database models.
 """
 
-import pytest
 from datetime import datetime
+
 from src.models import NewsArticle
 
 
@@ -14,7 +14,7 @@ def test_news_article_creation():
         content="Test content",
         source="TestSource",
         sentiment="bullish",
-        confidence_score=0.85
+        confidence_score=0.85,
     )
 
     assert article.title == "Test Article"
@@ -36,7 +36,7 @@ def test_news_article_to_dict():
         tokens_mentioned=["BTC"],
         sentiment="bullish",
         confidence_score=0.85,
-        created_at=now
+        created_at=now,
     )
 
     article_dict = article.to_dict()

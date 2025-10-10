@@ -2,18 +2,20 @@
 CoinGecko API service for fetching live crypto news.
 """
 
-import httpx
 import logging
-from typing import List, Dict, Any, Optional
 from datetime import datetime
+from typing import Any
+
+import httpx
 from decouple import config
-from sqlalchemy.orm import Session
-from database import SessionLocal
-from models import NewsArticle
+
+from src.database import SessionLocal
+from src.models import NewsArticle
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 class CoinGeckoService:
     """Service for fetching crypto news from CoinGecko API."""
@@ -24,23 +26,22 @@ class CoinGeckoService:
         self.base_url = "https://api.coingecko.com/api/v3"
         self.headers = {
             "x-cg-demo-api-key": self.api_key,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         # Rate limiting
         self.rate_limit_delay = 1.0  # 1 second between requests
 
-    async def _make_request(self, endpoint: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def _make_request(
+        self, endpoint: str, params: dict[str, Any] = None
+    ) -> dict[str, Any]:
         """Make HTTP request to CoinGecko API with rate limiting."""
         url = f"{self.base_url}{endpoint}"
 
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.get(
-                    url,
-                    headers=self.headers,
-                    params=params or {},
-                    timeout=30.0
+                    url, headers=self.headers, params=params or {}, timeout=30.0
                 )
                 response.raise_for_status()
                 return response.json()
@@ -55,13 +56,30 @@ class CoinGeckoService:
             logger.error(f"Unexpected error: {e}")
             raise
 
-    def _extract_tokens_from_text(self, text: str) -> List[str]:
+    def _extract_tokens_from_text(self, text: str) -> list[str]:
         """Extract crypto token symbols from text."""
         # Common crypto tokens to look for
         crypto_tokens = [
-            "BTC", "BITCOIN", "ETH", "ETHEREUM", "SOL", "SOLANA",
-            "USDT", "USDC", "BNB", "ADA", "XRP", "DOGE", "DOT",
-            "AVAX", "MATIC", "LINK", "UNI", "LTC", "BCH", "ATOM"
+            "BTC",
+            "BITCOIN",
+            "ETH",
+            "ETHEREUM",
+            "SOL",
+            "SOLANA",
+            "USDT",
+            "USDC",
+            "BNB",
+            "ADA",
+            "XRP",
+            "DOGE",
+            "DOT",
+            "AVAX",
+            "MATIC",
+            "LINK",
+            "UNI",
+            "LTC",
+            "BCH",
+            "ATOM",
         ]
 
         text_upper = text.upper()
@@ -73,7 +91,7 @@ class CoinGeckoService:
 
         return list(set(found_tokens))  # Remove duplicates
 
-    def _parse_coingecko_article(self, article_data: Dict[str, Any]) -> NewsArticle:
+    def _parse_coingecko_article(self, article_data: dict[str, Any]) -> NewsArticle:
         """Parse CoinGecko article data into NewsArticle model."""
         try:
             # Extract tokens from title and content
@@ -103,7 +121,7 @@ class CoinGeckoService:
                 sentiment=None,  # Will be filled by sentiment analysis
                 confidence_score=None,
                 s3_bucket_source=None,  # Not from S3
-                s3_key_source=None
+                s3_key_source=None,
             )
 
             return article
@@ -112,7 +130,7 @@ class CoinGeckoService:
             logger.error(f"Error parsing CoinGecko article: {e}")
             raise
 
-    async def fetch_trending_news(self) -> List[NewsArticle]:
+    async def fetch_trending_news(self) -> list[NewsArticle]:
         """Fetch trending crypto news from CoinGecko."""
         try:
             # Fetch trending coins first
@@ -132,11 +150,15 @@ class CoinGeckoService:
                         source="CoinGecko Trending",
                         url=f"https://www.coingecko.com/en/coins/{coin_info.get('id', '')}",
                         published_at=datetime.now(),
-                        tokens_mentioned=[coin_info.get('symbol', '').upper()] if coin_info.get('symbol') else [],
+                        tokens_mentioned=(
+                            [coin_info.get("symbol", "").upper()]
+                            if coin_info.get("symbol")
+                            else []
+                        ),
                         sentiment=None,
                         confidence_score=None,
                         s3_bucket_source=None,
-                        s3_key_source=None
+                        s3_key_source=None,
                     )
                     articles.append(article)
 
@@ -147,7 +169,7 @@ class CoinGeckoService:
             logger.error(f"Error fetching trending news: {e}")
             return []
 
-    async def fetch_coin_news(self, coin_id: str = "bitcoin") -> List[NewsArticle]:
+    async def fetch_coin_news(self, coin_id: str = "bitcoin") -> list[NewsArticle]:
         """Fetch news for a specific coin (Note: This endpoint may not be available in free tier)."""
         try:
             # This endpoint might require a paid plan
@@ -165,7 +187,7 @@ class CoinGeckoService:
             logger.warning(f"Could not fetch coin news (may require paid plan): {e}")
             return []
 
-    def save_articles_to_db(self, articles: List[NewsArticle]) -> int:
+    def save_articles_to_db(self, articles: list[NewsArticle]) -> int:
         """Save fetched articles to database."""
         db = SessionLocal()
         saved_count = 0
@@ -173,10 +195,14 @@ class CoinGeckoService:
         try:
             for article in articles:
                 # Check if article already exists (by title and source)
-                existing = db.query(NewsArticle).filter(
-                    NewsArticle.title == article.title,
-                    NewsArticle.source == article.source
-                ).first()
+                existing = (
+                    db.query(NewsArticle)
+                    .filter(
+                        NewsArticle.title == article.title,
+                        NewsArticle.source == article.source,
+                    )
+                    .first()
+                )
 
                 if not existing:
                     db.add(article)
@@ -208,7 +234,9 @@ async def fetch_latest_news():
         if articles:
             # Save to database
             saved_count = service.save_articles_to_db(articles)
-            logger.info(f"Successfully fetched and saved {saved_count} articles from CoinGecko")
+            logger.info(
+                f"Successfully fetched and saved {saved_count} articles from CoinGecko"
+            )
         else:
             logger.warning("No articles were fetched from CoinGecko")
 
@@ -219,4 +247,5 @@ async def fetch_latest_news():
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(fetch_latest_news())
