@@ -16,6 +16,21 @@ if ! command -v docker &> /dev/null; then
     sudo usermod -aG docker ubuntu
     sudo systemctl start docker
     sudo systemctl enable docker
+    echo "⚠️  Docker installed. You may need to log out and back in for permissions to take effect."
+fi
+
+# Ensure ubuntu user is in docker group and restart docker if needed
+if ! groups ubuntu | grep -q docker; then
+    echo "📦 Adding ubuntu user to docker group..."
+    sudo usermod -aG docker ubuntu
+    sudo systemctl restart docker
+fi
+
+# Test docker permissions
+if ! docker ps &> /dev/null; then
+    echo "⚠️  Docker permission issue detected. Trying to fix..."
+    sudo chmod 666 /var/run/docker.sock
+    sudo systemctl restart docker
 fi
 
 if ! command -v aws &> /dev/null; then
