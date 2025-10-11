@@ -411,6 +411,134 @@ async def get_stats(
         ) from None
 
 
+@app.get("/api/search/similar/{article_id}")
+@limiter.limit("30/minute")
+async def search_similar_articles(
+    article_id: int,
+    request: Request,
+    api_key: str = Depends(verify_api_key),
+    db: Session = Depends(get_db),
+    limit: int = Query(5, ge=1, le=20, description="Number of similar articles to return"),
+):
+    """
+    Find articles similar to a given article using vector similarity search.
+
+    Uses cosine similarity on embeddings to find semantically similar articles.
+    Only returns articles that have embeddings.
+    """
+    try:
+        # Get the source article
+        source_article = db.query(NewsArticle).filter(NewsArticle.id == article_id).first()
+
+        if not source_article:
+            raise HTTPException(status_code=404, detail=f"Article {article_id} not found")
+
+        if source_article.embedding is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Article {article_id} does not have an embedding. Generate embeddings first."
+            )
+
+        # Use pgvector's cosine distance operator (<=>)
+        # Lower distance = more similar
+        similar_articles = (
+            db.query(
+                NewsArticle,
+                NewsArticle.embedding.cosine_distance(source_article.embedding).label("distance")
+            )
+            .filter(NewsArticle.embedding.isnot(None))
+            .filter(NewsArticle.id != article_id)  # Exclude the source article
+            .order_by("distance")
+            .limit(limit)
+            .all()
+        )
+
+        results = []
+        for article, distance in similar_articles:
+            similarity_score = 1 - distance  # Convert distance to similarity (0-1)
+            result = article.to_dict()
+            result["similarity_score"] = round(similarity_score, 4)
+            results.append(result)
+
+        return {
+            "source_article": {
+                "id": source_article.id,
+                "title": source_article.title,
+            },
+            "similar_articles": results,
+            "count": len(results),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error finding similar articles: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error finding similar articles: {str(e)}"
+        ) from None
+
+
+@app.post("/api/search/query")
+@limiter.limit("30/minute")
+async def search_by_query(
+    request: Request,
+    api_key: str = Depends(verify_api_key),
+    db: Session = Depends(get_db),
+    query: str = Query(..., min_length=3, description="Search query text"),
+    limit: int = Query(10, ge=1, le=50, description="Number of results to return"),
+):
+    """
+    Search articles by text query using semantic similarity.
+
+    Generates an embedding for the query text and finds articles with similar embeddings.
+    Uses cosine similarity for ranking results.
+    """
+    try:
+        # Generate embedding for the query
+        embedding_service = EmbeddingService()
+        query_embedding = embedding_service.generate_embedding(query)
+
+        # Check if embedding generation failed (fallback zeros)
+        if sum(query_embedding) == 0:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to generate query embedding. Check AWS Bedrock credentials."
+            )
+
+        # Search for similar articles using pgvector
+        similar_articles = (
+            db.query(
+                NewsArticle,
+                NewsArticle.embedding.cosine_distance(query_embedding).label("distance")
+            )
+            .filter(NewsArticle.embedding.isnot(None))
+            .order_by("distance")
+            .limit(limit)
+            .all()
+        )
+
+        results = []
+        for article, distance in similar_articles:
+            similarity_score = 1 - distance  # Convert distance to similarity (0-1)
+            result = article.to_dict()
+            result["similarity_score"] = round(similarity_score, 4)
+            results.append(result)
+
+        return {
+            "query": query,
+            "results": results,
+            "count": len(results),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error searching by query: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error searching by query: {str(e)}"
+        ) from None
+
+
 if __name__ == "__main__":
     # Get configuration from environment
     host = config("HOST", default="0.0.0.0")
