@@ -65,67 +65,95 @@
 
 ---
 
-## Day 3 – Embeddings, Sentiment Analysis & Observability
+## Day 3 – Embeddings, Vector Storage & Observability
 **Tools & AWS Services:**
-- **Database**: Postgres with `pgvector` (Docker container on EC2).
+- **Database**: Postgres with `pgvector` extension (Docker container on EC2).
+- **Embeddings**: Amazon Bedrock Titan Text Embeddings for semantic search.
 - **Observability**: Prometheus + Grafana Cloud + Jaeger (Docker containers).
 - **Tracing**: OpenTelemetry Collector → Jaeger (local) + CloudWatch (AWS).
-- **Embeddings**: Prepare for Amazon Bedrock Titan embeddings (Day 4).
+- **Metrics**: Application metrics, API latency, sentiment distribution.
 
 **Build:**
-- Extend crypto news agent: generate embeddings for news articles using local models.
-- Store embeddings in Postgres/pgvector with proper schema design.
-- Implement sentiment classification (bullish/bearish/neutral) for crypto news.
-- Add observability stack: Prometheus → Grafana Cloud, OTel → Jaeger.
-- Collect p50/p95 latency metrics and trace crypto news processing pipeline.
-- Create basic dashboard showing sentiment trends by token (BTC, ETH, SOL).
+- Integrate Amazon Bedrock Titan embeddings for crypto news articles.
+- Design and implement pgvector schema for efficient embedding storage.
+- Add vector similarity search endpoints (find semantically similar news).
+- Enhance sentiment analysis with Bedrock (ensure full coverage of news sources).
+- Deploy full observability stack: Prometheus → Grafana Cloud, OTel → Jaeger.
+- Instrument application with custom metrics: API latency (p50/p95/p99), embedding generation time.
+- Create Grafana dashboards showing sentiment trends by token (BTC, ETH, SOL) with historical data.
+- Add distributed tracing for full request lifecycle (S3 → embeddings → sentiment → storage).
 
-**Discussion:** Embedding schema design for crypto news, vector similarity search patterns, and observability best practices for agentic workflows.
+**Discussion:** Vector database schema design for production, semantic search patterns for crypto news, observability best practices for LLM workflows, and cost optimization for Bedrock embeddings.
 
 ---
 
-## Day 4 – Amazon Bedrock Integration & Production Guardrails
+## Day 4 – Guardrails, Evaluation & Production Resilience
 **Tools & AWS Services:**
-- **LLM Service**: Amazon Bedrock (Claude 3.5 Sonnet, Titan embeddings).
-- **Guardrails**: Amazon Bedrock Guardrails + OPA-style allowlist rules.
-- **Testing**: pytest + synthetic evaluation sets for crypto sentiment accuracy.
-- **Workflow orchestration**: Add retry logic and fallback mechanisms.
+- **Guardrails**: Amazon Bedrock Guardrails for content filtering and topic detection.
+- **Security**: Prompt injection protection and input validation.
+- **Testing**: pytest + synthetic evaluation datasets for sentiment accuracy.
+- **Resilience**: Retry logic, circuit breakers, and fallback mechanisms.
+- **Monitoring**: Cost tracking and rate limit management for Bedrock.
 
 **Build:**
-- Migrate from local LLM to Amazon Bedrock for sentiment analysis.
-- Implement Bedrock Guardrails to filter sensitive/unsafe content in crypto news.
-- Add OPA-style allowlist rules for crypto news API calls and sentiment classifications.
-- Implement retry logic with exponential backoff for API failures.
-- Add fallback LLM routing (Claude → Llama) for resilience.
-- Create evaluation harness: test sentiment accuracy against gold dataset.
-- Add I/O validation with Pydantic schemas for all LLM outputs.
+- Implement Amazon Bedrock Guardrails for content filtering (sensitive topics, harmful content).
+- Add guardrails for topic detection (ensure content is crypto-related).
+- Build prompt injection protection for sentiment analysis inputs.
+- Create evaluation harness with gold dataset (100+ labeled crypto news samples).
+- Implement sentiment accuracy metrics and confusion matrix tracking.
+- Add retry logic with exponential backoff and jitter for API failures.
+- Implement circuit breaker pattern for Bedrock API calls.
+- Add fallback mechanisms (Claude Sonnet → Haiku, cached responses on failure).
+- Build synthetic test suite for edge cases (rate limits, API errors, malformed inputs).
+- Add cost monitoring dashboard: track Bedrock API costs per endpoint.
+- Implement rate limit handling and request throttling.
 
-**Discussion:** Balancing speed, safety, and cost in enterprise deployments; Bedrock pricing optimization strategies.
+**Discussion:** Balancing speed, safety, and cost in production LLM systems; evaluation methodologies for sentiment analysis; building resilient agentic workflows.
 
 ---
 
 ## Day 5 – Capstone: Production Crypto Sentiment Dashboard
-**Team Project:** Complete crypto news & sentiment agent with production dashboard.
+**Team Project:** Polish and integrate all components into production-ready crypto sentiment dashboard.
 
-**Use case**: Crypto news ingestion → sentiment analysis with Bedrock → embedding storage in Postgres/pgvector → real-time dashboard with trends per token (BTC, ETH, SOL).
+**Use case**: End-to-end crypto intelligence platform - News ingestion (S3 + CoinGecko) → Bedrock sentiment analysis → Titan embeddings → pgvector storage → semantic search → real-time dashboard with trends per token (BTC, ETH, SOL).
 
-**Must include:**
-- **CI/CD Pipeline**: GitHub Actions with OIDC → AWS IAM role
-- **AWS Infrastructure**: EC2 + ECR + SSM Parameter Store + CloudFront
-- **Database**: Postgres/pgvector with crypto news embeddings
-- **LLM Integration**: Amazon Bedrock (Claude 3.5 Sonnet + Titan embeddings)
-- **Security**: Bedrock Guardrails + OPA allowlist rules + IAM least-privilege
-- **Observability**: Prometheus → Grafana Cloud + OTel → Jaeger + CloudWatch
-- **Resilience**: Retry logic + fallback LLM routing + evaluation harness
-- **Dashboard**: Real-time crypto sentiment trends by token with historical data
+**Integration Tasks:**
+- **Polish Dashboard UI**: Create production-quality Streamlit or React dashboard
+- **Add Advanced Features**:
+  - Semantic search for similar news articles (using pgvector similarity)
+  - Sentiment trend visualization by token over time
+  - News source reliability scoring
+  - Alert system for significant sentiment shifts
+- **Performance Optimization**:
+  - Implement caching strategy (Redis) for frequent queries
+  - Optimize pgvector indexes for fast similarity search
+  - Add connection pooling for database
+- **Production Hardening**:
+  - Add comprehensive error handling and logging
+  - Implement health checks for all services
+  - Add automated smoke tests for deployment validation
+  - Configure alerts for system failures and accuracy drift
 
-**Production Deployment:**
-- Deploy to AWS EC2 with CloudFront edge distribution
-- Configure security groups (public web access, private database/observability)
-- Set up monitoring alerts for API failures and sentiment accuracy drift
-- Implement canary deployment for model updates
+**Production Deployment Checklist:**
+- ✅ **CI/CD Pipeline**: GitHub Actions with OIDC → AWS IAM role
+- ✅ **AWS Infrastructure**: EC2 + ECR + IAM roles + Security Groups
+- ✅ **Database**: Postgres/pgvector with embeddings and proper indexes
+- ✅ **LLM Integration**: Amazon Bedrock (Claude Haiku for sentiment + Titan for embeddings)
+- ✅ **Security**: API key authentication + Bedrock Guardrails + IAM least-privilege
+- ✅ **Observability**: Prometheus → Grafana Cloud + OTel → Jaeger + custom dashboards
+- ✅ **Resilience**: Retry logic + circuit breakers + fallback mechanisms + evaluation harness
+- ✅ **Dashboard**: Real-time sentiment trends, semantic search, and news analytics
 
-**Closing:**
-- Teams present architecture choices and demo live crypto sentiment dashboard.
-- Instructor demo: enterprise scaling patterns (RDS, ElastiCache, multi-region deployment).
-- Deliverable: full GitHub repo with AWS infrastructure, CI/CD workflows, and production-ready crypto sentiment agent.
+**Final Presentation:**
+- Each team presents their architecture decisions and trade-offs
+- Live demo of crypto sentiment dashboard with real-time data
+- Discussion of lessons learned and production challenges faced
+- Instructor demo: Enterprise scaling patterns (RDS, ElastiCache, multi-region, auto-scaling)
+
+**Deliverables:**
+- Full GitHub repository with complete source code
+- AWS infrastructure deployed and running
+- CI/CD pipeline with automated testing
+- Grafana dashboards showing system health and sentiment metrics
+- Documentation for deployment and operations
+- Evaluation results and accuracy metrics
