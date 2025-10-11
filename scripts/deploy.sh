@@ -35,7 +35,16 @@ fi
 
 if ! command -v aws &> /dev/null; then
     echo "📦 Installing AWS CLI..."
-    sudo apt install -y awscli
+    sudo apt update
+    # Try different package names for AWS CLI
+    if ! sudo apt install -y awscli; then
+        echo "📦 Installing AWS CLI v2..."
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        sudo apt install -y unzip
+        unzip awscliv2.zip
+        sudo ./aws/install
+        rm -rf aws awscliv2.zip
+    fi
 fi
 
 # Create application directory if it doesn't exist
