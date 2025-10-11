@@ -8,19 +8,22 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from decouple import config
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from src.database import get_db, init_db, setup_pgvector
+from src.database import engine, get_db, init_db, setup_pgvector
+from src.metrics import MetricsMiddleware
 from src.models import NewsArticle
 from src.services.coingecko_service import fetch_latest_news
 from src.services.s3_processor import process_s3_pdfs
 from src.services.sentiment_analyzer import analyze_all_articles
+from src.tracing import setup_tracing
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -48,8 +51,12 @@ async def lifespan(app: FastAPI):
         init_db()
         setup_pgvector()
         logger.info("Database initialized successfully")
+
+        # Set up OpenTelemetry tracing
+        setup_tracing(app, engine=engine)
+
     except Exception as e:
-        logger.error(f"Database initialization failed: {e}")
+        logger.error(f"Initialization failed: {e}")
 
     yield
 
@@ -68,6 +75,9 @@ app = FastAPI(
 # Add rate limiter to app
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Add metrics middleware
+app.add_middleware(MetricsMiddleware)
 
 # Add CORS middleware
 app.add_middleware(
@@ -100,6 +110,17 @@ async def root():
 async def health_check():
     """Health check endpoint for Docker health checks."""
     return {"status": "healthy", "service": "crypto-sentiment-agent"}
+
+
+@app.get("/metrics")
+async def metrics():
+    """
+    Prometheus metrics endpoint.
+
+    Exposes application metrics in Prometheus format for scraping.
+    This endpoint is public (no API key required) for Prometheus to scrape.
+    """
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.get("/api/news/")
