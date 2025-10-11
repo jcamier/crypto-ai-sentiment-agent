@@ -5,12 +5,20 @@ global:
     cluster: 'crypto-sentiment-agent'
     environment: 'production'
 
-# Grafana Cloud Remote Write (optional - uncomment and configure when needed)
-# remote_write:
-#   - url: https://prometheus-prod-XX-XXX.grafana.net/api/prom/push
-#     basic_auth:
-#       username: YOUR_GRAFANA_CLOUD_USERNAME
-#       password: YOUR_GRAFANA_CLOUD_API_KEY
+# Grafana Cloud Remote Write - credentials injected from environment variables
+remote_write:
+  - url: ${GRAFANA_CLOUD_PROMETHEUS_URL}
+    basic_auth:
+      username: ${GRAFANA_CLOUD_PROMETHEUS_USERNAME}
+      password: ${GRAFANA_CLOUD_PROMETHEUS_PASSWORD}
+    queue_config:
+      capacity: 10000
+      max_shards: 5
+      min_shards: 1
+      max_samples_per_send: 500
+      batch_send_deadline: 5s
+      min_backoff: 30ms
+      max_backoff: 100ms
 
 scrape_configs:
   # Scrape metrics from the crypto-agent application
@@ -26,4 +34,5 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
     scrape_interval: 15s
+
 

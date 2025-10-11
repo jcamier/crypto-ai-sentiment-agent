@@ -16,6 +16,7 @@ help:
 	@echo "  migrate-create - Create a new migration"
 	@echo "  migrate-rollback - Rollback last migration"
 	@echo "  migrate-history - Show migration history"
+	@echo "  setup-prometheus - Generate Prometheus config with Grafana Cloud credentials"
 	@echo "  test         - Run tests"
 	@echo "  clean        - Clean up containers and volumes"
 	@echo "  logs         - Show logs from all services"
@@ -62,6 +63,24 @@ migrate-rollback: up
 # Show migration history
 migrate-history: up
 	docker compose exec crypto-agent alembic history
+
+# Setup Prometheus with Grafana Cloud credentials (from .env)
+setup-prometheus:
+	@echo "Generating Prometheus config with Grafana Cloud credentials..."
+	@if [ ! -f .env ]; then \
+		echo "❌ Error: .env file not found"; \
+		echo "Please copy env.example to .env and add your Grafana Cloud credentials"; \
+		exit 1; \
+	fi
+	@set -a && . ./.env && set +a && \
+	if [ -z "$$GRAFANA_CLOUD_PROMETHEUS_URL" ]; then \
+		echo "❌ Error: GRAFANA_CLOUD_PROMETHEUS_URL not set in .env"; \
+		echo "Please add your Grafana Cloud credentials to .env first"; \
+		exit 1; \
+	fi && \
+	envsubst < observability/prometheus.yml.template > observability/prometheus.yml && \
+	echo "✅ Prometheus config generated with credentials from .env" && \
+	echo "⚠️  Remember: observability/prometheus.yml is gitignored and contains secrets"
 
 # Run tests (automatically starts services if needed)
 test:

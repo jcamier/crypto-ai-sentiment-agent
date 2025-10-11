@@ -17,9 +17,10 @@ This directory contains configuration for the observability stack used in the Cr
 - **Access**: http://localhost:16686
 
 ### Grafana Cloud (Optional)
-- **Purpose**: Centralized metrics visualization
-- **Setup**: Uncomment `remote_write` section in `prometheus.yml`
+- **Purpose**: Centralized metrics visualization and dashboards
+- **Setup**: Follow the Grafana Cloud Setup section below
 - **Free Tier**: 10K series, 50GB logs/month
+- **Benefit**: Persistent metrics storage and advanced visualization
 
 ## Configuration
 
@@ -97,12 +98,52 @@ rate(http_requests_total{status=~"5.."}[5m])
 rate(bedrock_api_cost_usd[1h]) * 3600
 ```
 
-### Grafana Cloud Setup (Optional)
+### Grafana Cloud Setup - Secure Configuration
 
-1. Create free account at https://grafana.com/auth/sign-up
-2. Get Prometheus remote write URL and credentials
-3. Update `prometheus.yml` remote_write section
-4. Restart Prometheus: `docker compose restart prometheus`
+**Step 1: Get Your Grafana Cloud Credentials**
+1. Create a free account at: https://grafana.com/auth/sign-up
+2. Go to: **Connections** → **Add new connection** → **Hosted Prometheus metrics**
+3. Select: **"From my local Prometheus server"**
+4. Copy the three values from the configuration shown:
+   - `url` → Save as GRAFANA_CLOUD_PROMETHEUS_URL
+   - `username` → Save as GRAFANA_CLOUD_PROMETHEUS_USERNAME
+   - `password` → Save as GRAFANA_CLOUD_PROMETHEUS_PASSWORD
+
+**Step 2: Add Credentials to Your `.env` File**
+```bash
+# Add these lines to your .env file (NOT .env.example!)
+# Replace the values with your actual Grafana Cloud credentials from Step 1
+GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-prod-XX-XXX.grafana.net/api/prom/push
+GRAFANA_CLOUD_PROMETHEUS_USERNAME=your-username-here
+GRAFANA_CLOUD_PROMETHEUS_PASSWORD=your-api-key-here
+```
+
+**Step 3: Generate Prometheus Config with Credentials**
+```bash
+# This command reads .env and generates observability/prometheus.yml
+make setup-prometheus
+
+# The generated file is gitignored (contains secrets)
+```
+
+**Step 4: Start the Stack and Verify**
+```bash
+# Start all services
+make up
+
+# Check Prometheus logs for successful remote write
+docker compose logs prometheus | grep -i "remote_write"
+
+# Visit your Grafana Cloud instance
+# Go to Explore → Select "Prometheus" → Query: up{job="crypto-agent"}
+```
+
+**⚠️ Security Notes:**
+- ✅ `observability/prometheus.yml` is gitignored (contains secrets)
+- ✅ `observability/prometheus.yml.template` is the safe template (no secrets)
+- ✅ Credentials come from `.env` (also gitignored)
+- ✅ For production/GitHub: Add GRAFANA_CLOUD_* variables to GitHub Secrets
+- ❌ NEVER commit actual credentials to git
 
 ## Troubleshooting
 
