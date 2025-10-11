@@ -8,22 +8,15 @@ IMAGE_NAME=${1:-"crypto-sentiment-agent:latest"}
 
 echo "🚀 Starting deployment of $IMAGE_NAME..."
 
-# Install Docker and AWS CLI if not present
+# Check prerequisites - Docker and AWS CLI should be pre-installed
 if ! command -v docker &> /dev/null; then
-    echo "📦 Installing Docker..."
-    sudo apt update
-    sudo apt install -y docker.io docker-compose
-    sudo usermod -aG docker ubuntu
-    sudo systemctl start docker
-    sudo systemctl enable docker
-    echo "⚠️  Docker installed. You may need to log out and back in for permissions to take effect."
+    echo "❌ Error: Docker is not installed. Please use an AMI with Docker pre-installed or configure via EC2 User Data."
+    exit 1
 fi
 
-# Ensure ubuntu user is in docker group and restart docker if needed
-if ! groups ubuntu | grep -q docker; then
-    echo "📦 Adding ubuntu user to docker group..."
-    sudo usermod -aG docker ubuntu
-    sudo systemctl restart docker
+if ! command -v aws &> /dev/null; then
+    echo "❌ Error: AWS CLI is not installed. Please use an AMI with AWS CLI pre-installed or configure via EC2 User Data."
+    exit 1
 fi
 
 # Test docker permissions
@@ -31,20 +24,6 @@ if ! docker ps &> /dev/null; then
     echo "⚠️  Docker permission issue detected. Trying to fix..."
     sudo chmod 666 /var/run/docker.sock
     sudo systemctl restart docker
-fi
-
-if ! command -v aws &> /dev/null; then
-    echo "📦 Installing AWS CLI..."
-    sudo apt update
-    # Try different package names for AWS CLI
-    if ! sudo apt install -y awscli; then
-        echo "📦 Installing AWS CLI v2..."
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        sudo apt install -y unzip
-        unzip awscliv2.zip
-        sudo ./aws/install
-        rm -rf aws awscliv2.zip
-    fi
 fi
 
 # Create application directory if it doesn't exist
