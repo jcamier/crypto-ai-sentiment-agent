@@ -24,14 +24,14 @@ RUN uv pip install --system -e ".[dev]"
 COPY src/ ./src/
 COPY tests/ ./tests/
 
-# Set Python path
-ENV PYTHONPATH=/app/src
+# Set Python path to include /app so src.* imports work
+ENV PYTHONPATH=/app
 
-# Change to src directory
-WORKDIR /app/src
+# Keep working directory at /app
+WORKDIR /app
 
 # Expose port
 EXPOSE 8000
 
-# Default command
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Default command - run from /app with src.main module
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
