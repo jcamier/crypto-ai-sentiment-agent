@@ -9,8 +9,32 @@
 - CoinGecko API key (free tier)
 - Docker and Docker Compose
 - Python 3.11+
+- GitHub account for CI/CD
 
-### 1. Setup Environment
+### 1. Setup GitHub Secrets (For Deployment)
+
+Before deploying, add these secrets to your GitHub repository:
+
+**Go to: Repository Settings → Secrets and variables → Actions → New repository secret**
+
+#### Required Deployment Secrets:
+```bash
+# AWS & Infrastructure
+AWS_ROLE_ARN=arn:aws:iam::YOUR_ACCOUNT_ID:role/GitHubActionsDeployRole
+EC2_HOST=your.ec2.public.ip
+EC2_USER=ubuntu
+EC2_SSH_KEY=<paste-your-private-ssh-key-content>
+
+# Application Secrets
+DB_PASS=your-secure-database-password
+S3_BUCKET_NAME=your-s3-bucket-name
+COINGECKO_API_KEY=your-coingecko-api-key-or-leave-empty
+API_KEY=crypto-agent-secret-key
+```
+
+**Note:** AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) are NOT needed - the EC2 instance uses an IAM role for AWS access.
+
+### 2. Setup Environment
 ```bash
 # Copy environment template
 cp env.example .env
@@ -21,7 +45,7 @@ cp env.example .env
 # - COINGECKO_API_KEY
 ```
 
-### 2. Start Services
+### 3. Start Services
 ```bash
 # Start Docker containers
 make up
@@ -33,7 +57,7 @@ make setup
 make test
 ```
 
-### 3. Use the API
+### 4. Use the API
 ```bash
 # Test API endpoints
 curl http://localhost:8000/health
@@ -47,6 +71,33 @@ curl -X POST http://localhost:8000/api/fetch/live/
 # Analyze sentiment using Amazon Bedrock
 curl -X POST http://localhost:8000/api/analyze/sentiment/
 ```
+
+## 🚢 Deployment
+
+### Deploying to Production (EC2)
+
+The project uses GitHub Actions for CI/CD. To deploy:
+
+1. **Merge to production branch:**
+```bash
+git checkout production
+git merge main
+git push origin production
+```
+
+2. **GitHub Actions will automatically:**
+   - Run tests and linting
+   - Build Docker image
+   - Push to Amazon ECR
+   - Deploy to EC2 instance
+   - Run health checks
+
+3. **Access your deployed application:**
+```bash
+curl http://YOUR_EC2_IP:8000/health
+```
+
+**Note:** Make sure all GitHub Secrets are configured (see Setup section above).
 
 ## 📊 API Endpoints
 

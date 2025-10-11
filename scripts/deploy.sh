@@ -74,11 +74,9 @@ services:
       - DB_NAME=\${DB_NAME:-crypto_news}
       - DB_USER=\${DB_USER:-crypto}
       - DB_PASS=\${DB_PASS}
-      - AWS_ACCESS_KEY_ID=\${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=\${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=\${AWS_REGION:-us-east-1}
       - S3_BUCKET_NAME=\${S3_BUCKET_NAME}
-      - BEDROCK_MODEL_ID=\${BEDROCK_MODEL_ID}
+      - BEDROCK_MODEL_ID=\${BEDROCK_MODEL_ID:-anthropic.claude-3-haiku-20240307-v1:0}
       - COINGECKO_API_KEY=\${COINGECKO_API_KEY}
       - API_KEY=\${API_KEY:-crypto-agent-secret-key}
       - ENVIRONMENT=\${ENVIRONMENT:-production}
@@ -93,6 +91,7 @@ volumes:
 EOF
 
 # Create .env file from environment variables (no hardcoded secrets)
+# Note: AWS credentials not needed - EC2 uses IAM role
 echo "📝 Creating .env file from environment variables..."
 cat > .env << EOF
 # Database Configuration
@@ -100,12 +99,10 @@ DB_NAME=${DB_NAME:-crypto_news}
 DB_USER=${DB_USER:-crypto}
 DB_PASS=${DB_PASS}
 
-# AWS Configuration
-AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+# AWS Configuration (credentials from IAM role)
 AWS_REGION=${AWS_REGION:-us-east-1}
 S3_BUCKET_NAME=${S3_BUCKET_NAME}
-BEDROCK_MODEL_ID=${BEDROCK_MODEL_ID:-anthropic.claude-3-sonnet-20240229-v1:0}
+BEDROCK_MODEL_ID=${BEDROCK_MODEL_ID:-anthropic.claude-3-haiku-20240307-v1:0}
 
 # CoinGecko API
 COINGECKO_API_KEY=${COINGECKO_API_KEY}
