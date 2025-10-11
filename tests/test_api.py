@@ -42,7 +42,10 @@ def test_process_s3_endpoint(test_client):
 
         os.environ["API_KEY"] = "crypto-agent-secret-key"
 
-        response = test_client.post("/api/process/s3/?api_key=crypto-agent-secret-key")
+        # Use header instead of query parameter
+        response = test_client.post(
+            "/api/process/s3/", headers={"X-API-Key": "crypto-agent-secret-key"}
+        )
 
         # Debug the response
         if response.status_code != 200:
