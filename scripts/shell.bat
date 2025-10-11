@@ -1,3 +1,0 @@
-@echo off
-echo Opening shell in crypto-agent container...
-docker compose exec crypto-agent bash
