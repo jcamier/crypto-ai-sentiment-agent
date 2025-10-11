@@ -30,7 +30,18 @@ DB_PASS=your-secure-database-password
 S3_BUCKET_NAME=your-s3-bucket-name
 COINGECKO_API_KEY=your-coingecko-api-key-or-leave-empty
 API_KEY=crypto-agent-secret-key
+
+# Grafana Cloud Observability (for metrics visualization)
+GRAFANA_CLOUD_PROMETHEUS_URL=https://prometheus-prod-XX-XXX.grafana.net/api/prom/push
+GRAFANA_CLOUD_PROMETHEUS_USERNAME=your-grafana-username
+GRAFANA_CLOUD_PROMETHEUS_PASSWORD=your-grafana-api-key
 ```
+
+**📊 To get Grafana Cloud credentials:**
+1. Create free account at: https://grafana.com/auth/sign-up
+2. Go to: **Connections** → **Add new connection** → **Hosted Prometheus metrics**
+3. Select: **"From my local Prometheus server"**
+4. Copy the three values (url, username, password) shown in the configuration
 
 **Note:** AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) are NOT needed - the EC2 instance uses an IAM role for AWS access.
 

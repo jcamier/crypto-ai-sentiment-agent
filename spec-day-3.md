@@ -34,7 +34,7 @@ Day 3 focuses on **production-grade semantic search** and **complete observabili
 3. **Cost Monitoring**: Set up billing alerts for Bedrock usage
 
 ### Bedrock Model Requirements:
-- **Embedding Model**: `amazon.titan-embed-text-v1` or `amazon.titan-embed-text-v2`
+- **Embedding Model**: `amazon.titan-embed-text-v2` (1024 dimensions)
 - **Region**: Ensure Bedrock is available in your deployment region (us-east-1 recommended)
 - **Quotas**: Check service quotas for embedding generation rate limits
 
@@ -74,7 +74,7 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Add embedding column to news_articles table
 ALTER TABLE news_articles
-ADD COLUMN embedding vector(1536);  -- Titan v1 generates 1536-dimensional vectors
+ADD COLUMN embedding vector(1024);  -- Titan v2 generates 1024-dimensional vectors
 
 -- Create index for fast similarity search
 CREATE INDEX ON news_articles USING ivfflat (embedding vector_cosine_ops)
@@ -99,7 +99,7 @@ CREATE TABLE news_articles (
     confidence_score FLOAT,
     s3_bucket_source VARCHAR(255), -- S3 bucket where article was sourced from
     s3_key_source VARCHAR(500), -- S3 key/path of the source file
-    embedding vector(1536), -- Titan embedding vector
+    embedding vector(1024), -- Titan v2 embedding vector
     embedding_model VARCHAR(100), -- Track which model generated the embedding
     embedding_generated_at TIMESTAMP, -- When embedding was created
     created_at TIMESTAMP DEFAULT NOW()
@@ -136,7 +136,7 @@ class EmbeddingService:
         )
         self.model_id = config(
             'BEDROCK_EMBEDDING_MODEL_ID',
-            default='amazon.titan-embed-text-v1'
+            default='amazon.titan-embed-text-v2'
         )
 
     def generate_embedding(self, text: str) -> List[float]:
@@ -144,10 +144,10 @@ class EmbeddingService:
         Generate embedding vector for given text.
 
         Args:
-            text: Text to embed (max 8K tokens for Titan v1)
+            text: Text to embed (max 8K tokens for Titan v2)
 
         Returns:
-            List of floats representing the embedding vector (1536 dimensions)
+            List of floats representing the embedding vector (1024 dimensions)
         """
         try:
             # Truncate text if too long (rough estimate: 1 token ≈ 4 chars)
@@ -205,7 +205,7 @@ class EmbeddingService:
             except Exception as e:
                 logger.error(f"Failed to generate embedding for text {i+1}: {e}")
                 # Return zero vector as fallback
-                embeddings.append([0.0] * 1536)
+                embeddings.append([0.0] * 1024)
 
         return embeddings
 ```
@@ -234,7 +234,7 @@ class SentimentAnalyzer:
             article.sentiment = sentiment_result['sentiment']
             article.confidence_score = sentiment_result['confidence']
             article.embedding = embedding
-            article.embedding_model = 'amazon.titan-embed-text-v1'
+            article.embedding_model = 'amazon.titan-embed-text-v2'
             article.embedding_generated_at = datetime.utcnow()
             db.commit()
 ```
@@ -387,7 +387,7 @@ async def generate_embeddings_for_all(
                 embedding = embedding_service.generate_embedding(text)
 
                 article.embedding = embedding
-                article.embedding_model = 'amazon.titan-embed-text-v1'
+                article.embedding_model = 'amazon.titan-embed-text-v2'
                 article.embedding_generated_at = datetime.utcnow()
                 db.commit()
 
@@ -777,9 +777,9 @@ GRAFANA_CLOUD_API_KEY=your_api_key
 - **Documentation**: Observability setup and dashboard guides
 
 ### Cost Optimization
-- **Bedrock Embeddings**: Titan v1 ($0.0001 per 1K tokens input-only)
-  - Average article: ~500 tokens = $0.00005 per article
-  - 100 articles/day = $0.005/day = ~$0.15/month
+- **Bedrock Embeddings**: Titan v2 ($0.00002 per 1K tokens input-only)
+  - Average article: ~500 tokens = $0.00001 per article
+  - 100 articles/day = $0.001/day = ~$0.03/month
 - **Vector Storage**: Minimal incremental cost (~4KB per embedding)
 - **Observability**: Grafana Cloud free tier (10K series, 50GB logs/month)
 - **Jaeger**: Self-hosted (minimal resource usage)

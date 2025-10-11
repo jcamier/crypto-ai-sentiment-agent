@@ -113,7 +113,36 @@ API_KEY=${API_KEY:-crypto-agent-secret-key}
 # Application Configuration
 ENVIRONMENT=${ENVIRONMENT:-production}
 LOG_LEVEL=${LOG_LEVEL:-INFO}
+
+# Grafana Cloud Observability (optional)
+GRAFANA_CLOUD_PROMETHEUS_URL=${GRAFANA_CLOUD_PROMETHEUS_URL}
+GRAFANA_CLOUD_PROMETHEUS_USERNAME=${GRAFANA_CLOUD_PROMETHEUS_USERNAME}
+GRAFANA_CLOUD_PROMETHEUS_PASSWORD=${GRAFANA_CLOUD_PROMETHEUS_PASSWORD}
 EOF
+
+# Generate Prometheus config with Grafana Cloud credentials if provided
+if [ ! -z "$GRAFANA_CLOUD_PROMETHEUS_URL" ]; then
+    echo "📊 Configuring Grafana Cloud integration..."
+    if [ -f "observability/prometheus.yml.template" ]; then
+        # Install envsubst if not available
+        if ! command -v envsubst &> /dev/null; then
+            echo "Installing envsubst..."
+            sudo apt-get update -qq
+            sudo apt-get install -qq -y gettext-base
+        fi
+
+        # Load .env and generate prometheus.yml
+        set -a
+        source .env
+        set +a
+        envsubst < observability/prometheus.yml.template > observability/prometheus.yml
+        echo "✅ Prometheus config generated with Grafana Cloud credentials"
+    else
+        echo "⚠️  Warning: prometheus.yml.template not found, skipping Grafana Cloud setup"
+    fi
+else
+    echo "ℹ️  Grafana Cloud not configured (optional - metrics will be local only)"
+fi
 
 # Start the application
 echo "🚀 Starting application..."
