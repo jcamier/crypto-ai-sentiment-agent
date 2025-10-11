@@ -1,3 +1,0 @@
-@echo off
-echo Showing logs from all services...
-docker compose logs -f
