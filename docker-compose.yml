@@ -43,6 +43,9 @@ services:
       # CoinGecko API
       - COINGECKO_API_KEY=${COINGECKO_API_KEY}
 
+      # API Security
+      - API_KEY=${API_KEY:-crypto-agent-secret-key}
+
       # Amazon Bedrock Configuration
       - AWS_BEDROCK_REGION=${AWS_BEDROCK_REGION:-us-east-1}
       - BEDROCK_MODEL_ID=${BEDROCK_MODEL_ID:-anthropic.claude-3-haiku-20240307-v1:0}

@@ -113,18 +113,36 @@ curl http://YOUR_EC2_IP:8000/health
 | `/api/analyze/sentiment/` | POST | Analyze sentiment for articles |
 
 ### Example API Usage
+
+**Note:** All API endpoints (except `/` and `/health`) require the `X-API-Key` header for authentication.
+
 ```bash
+# Set your API key (default from env.example)
+API_KEY="crypto-agent-secret-key"
+
 # Get all news articles
-curl http://localhost:8000/api/news/
+curl -H "X-API-Key: $API_KEY" http://localhost:8000/api/news/
 
 # Get bullish sentiment articles only
-curl "http://localhost:8000/api/news/?sentiment=bullish"
+curl -H "X-API-Key: $API_KEY" "http://localhost:8000/api/news/?sentiment=bullish"
 
 # Get articles mentioning BTC
-curl "http://localhost:8000/api/news/?token=BTC"
+curl -H "X-API-Key: $API_KEY" "http://localhost:8000/api/news/?token=BTC"
 
 # Get sentiment analysis for BTC
-curl "http://localhost:8000/api/sentiment/?token=BTC"
+curl -H "X-API-Key: $API_KEY" "http://localhost:8000/api/sentiment/?token=BTC"
+
+# Get database statistics
+curl -H "X-API-Key: $API_KEY" http://localhost:8000/api/stats/
+
+# Process S3 PDFs
+curl -X POST -H "X-API-Key: $API_KEY" http://localhost:8000/api/process/s3/
+
+# Fetch live news
+curl -X POST -H "X-API-Key: $API_KEY" http://localhost:8000/api/fetch/live/
+
+# Analyze sentiment
+curl -X POST -H "X-API-Key: $API_KEY" http://localhost:8000/api/analyze/sentiment/
 ```
 
 ## 🏗️ Architecture
