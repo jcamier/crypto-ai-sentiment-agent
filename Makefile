@@ -17,6 +17,7 @@ help:
 	@echo "  migrate-rollback - Rollback last migration"
 	@echo "  migrate-history - Show migration history"
 	@echo "  setup-prometheus - Generate Prometheus config with Grafana Cloud credentials"
+	@echo "  generate-embeddings - Generate embeddings for all articles"
 	@echo "  test         - Run tests"
 	@echo "  clean        - Clean up containers and volumes"
 	@echo "  logs         - Show logs from all services"
@@ -95,6 +96,12 @@ test:
 clean:
 	docker compose down -v
 	docker system prune -f
+
+# Generate embeddings for all articles
+generate-embeddings: up
+	@echo "🚀 Generating embeddings for all articles..."
+	@sleep 3
+	docker compose exec crypto-agent python /app/scripts/generate_embeddings.py
 
 # Show logs
 logs:

@@ -21,6 +21,7 @@ from src.database import engine, get_db, init_db, setup_pgvector
 from src.metrics import MetricsMiddleware
 from src.models import NewsArticle
 from src.services.coingecko_service import fetch_latest_news
+from src.services.embedding_service import EmbeddingService
 from src.services.s3_processor import process_s3_pdfs
 from src.services.sentiment_analyzer import analyze_all_articles
 from src.tracing import setup_tracing
@@ -282,6 +283,95 @@ async def analyze_sentiment_endpoint(
         logger.error(f"Error analyzing sentiment: {e}")
         raise HTTPException(
             status_code=500, detail=f"Error analyzing sentiment: {str(e)}"
+        ) from None
+
+
+@app.post("/api/embeddings/generate/")
+@limiter.limit("5/minute")
+async def generate_embeddings_endpoint(
+    request: Request,
+    api_key: str = Depends(verify_api_key),
+    db: Session = Depends(get_db),
+    auto_generate: bool = Query(
+        True, description="Automatically generate embeddings for new articles"
+    ),
+):
+    """
+    Generate embeddings for all articles without embeddings.
+
+    This endpoint uses Amazon Bedrock Titan Text Embeddings V2 to generate
+    1024-dimensional vector embeddings for semantic search.
+    """
+    try:
+        embedding_service = EmbeddingService()
+
+        # Count articles without embeddings
+        articles_without_embeddings = (
+            db.query(NewsArticle).filter(NewsArticle.embedding.is_(None)).all()
+        )
+
+        if not articles_without_embeddings:
+            return {
+                "message": "All articles already have embeddings",
+                "total_articles": db.query(func.count(NewsArticle.id)).scalar(),
+                "articles_with_embeddings": db.query(func.count(NewsArticle.id)).scalar(),
+                "status": "completed",
+            }
+
+        successful = 0
+        failed = 0
+
+        for article in articles_without_embeddings:
+            try:
+                # Combine title and description for embedding
+                text_to_embed = f"{article.title}\n\n{article.description or ''}"
+
+                # Generate embedding
+                embedding = embedding_service.generate_embedding(text_to_embed)
+
+                # Check if embedding was generated (not fallback zeros)
+                if sum(embedding) == 0:
+                    logger.warning(
+                        f"Fallback embedding for article {article.id}: {article.title[:50]}..."
+                    )
+                    failed += 1
+                    continue
+
+                # Update article with embedding
+                from datetime import datetime
+
+                article.embedding = embedding
+                article.embedding_model = embedding_service.model_id
+                article.embedding_generated_at = datetime.utcnow()
+
+                db.commit()
+                successful += 1
+
+            except Exception as e:
+                logger.error(f"Failed to generate embedding for article {article.id}: {e}")
+                db.rollback()
+                failed += 1
+
+        total_articles = db.query(func.count(NewsArticle.id)).scalar()
+        articles_with_embeddings = (
+            db.query(func.count(NewsArticle.id))
+            .filter(NewsArticle.embedding.isnot(None))
+            .scalar()
+        )
+
+        return {
+            "message": f"Generated embeddings for {successful} articles",
+            "successful": successful,
+            "failed": failed,
+            "total_articles": total_articles,
+            "articles_with_embeddings": articles_with_embeddings,
+            "status": "completed",
+        }
+
+    except Exception as e:
+        logger.error(f"Error generating embeddings: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error generating embeddings: {str(e)}"
         ) from None
 
 

@@ -24,6 +24,9 @@ RUN uv pip install --system -e ".[dev]"
 COPY src/ ./src/
 COPY tests/ ./tests/
 
+# Copy scripts directory
+COPY scripts/ ./scripts/
+
 # Copy Alembic migration files
 COPY alembic/ ./alembic/
 COPY alembic.ini ./
