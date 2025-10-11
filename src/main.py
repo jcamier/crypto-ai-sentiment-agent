@@ -8,11 +8,12 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from decouple import config
-from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from src.database import get_db, init_db, setup_pgvector
@@ -29,12 +30,14 @@ logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)
 
 
-def verify_api_key(api_key: str = Query(..., description="API key for authentication")):
-    """Verify API key for protected endpoints."""
+def verify_api_key(
+    x_api_key: str = Header(..., description="API key for authentication")
+):
+    """Verify API key for protected endpoints via X-API-Key header."""
     expected_key = config("API_KEY", default="crypto-agent-secret-key")
-    if api_key != expected_key:
+    if x_api_key != expected_key:
         raise HTTPException(status_code=401, detail="Invalid API key")
-    return api_key
+    return x_api_key
 
 
 @asynccontextmanager
@@ -278,7 +281,7 @@ async def get_stats(
 
         # Count by source
         sources = (
-            db.query(NewsArticle.source, db.func.count(NewsArticle.id))
+            db.query(NewsArticle.source, func.count(NewsArticle.id))
             .group_by(NewsArticle.source)
             .all()
         )
