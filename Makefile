@@ -11,7 +11,11 @@ help:
 	@echo "  up           - Start all services with docker compose"
 	@echo "  down         - Stop all services"
 	@echo "  build        - Build all Docker images"
-	@echo "  setup        - Complete project setup (database + pgvector)"
+	@echo "  setup        - Complete project setup (database + migrations)"
+	@echo "  migrate      - Run database migrations"
+	@echo "  migrate-create - Create a new migration"
+	@echo "  migrate-rollback - Rollback last migration"
+	@echo "  migrate-history - Show migration history"
 	@echo "  test         - Run tests"
 	@echo "  clean        - Clean up containers and volumes"
 	@echo "  logs         - Show logs from all services"
@@ -36,8 +40,28 @@ build:
 	docker compose build
 
 # Complete project setup
-setup: init-db setup-pgvector
+setup: init-db migrate
 	@echo "Project setup complete!"
+
+# Run database migrations
+migrate: up
+	@echo "Running database migrations..."
+	@sleep 3
+	docker compose exec crypto-agent alembic upgrade head
+
+# Create a new migration
+migrate-create: up
+	@read -p "Enter migration name: " name; \
+	docker compose exec crypto-agent alembic revision -m "$$name"
+
+# Rollback last migration
+migrate-rollback: up
+	@echo "Rolling back last migration..."
+	docker compose exec crypto-agent alembic downgrade -1
+
+# Show migration history
+migrate-history: up
+	docker compose exec crypto-agent alembic history
 
 # Run tests (automatically starts services if needed)
 test:

@@ -24,6 +24,10 @@ RUN uv pip install --system -e ".[dev]"
 COPY src/ ./src/
 COPY tests/ ./tests/
 
+# Copy Alembic migration files
+COPY alembic/ ./alembic/
+COPY alembic.ini ./
+
 # Set Python path to include /app so src.* imports work
 ENV PYTHONPATH=/app
 

@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'crypto-sentiment-agent'
+    environment: 'production'
+
+# Grafana Cloud Remote Write (optional - uncomment and configure when needed)
+# remote_write:
+#   - url: https://prometheus-prod-XX-XXX.grafana.net/api/prom/push
+#     basic_auth:
+#       username: YOUR_GRAFANA_CLOUD_USERNAME
+#       password: YOUR_GRAFANA_CLOUD_API_KEY
+
+scrape_configs:
+  # Scrape metrics from the crypto-agent application
+  - job_name: 'crypto-agent'
+    static_configs:
+      - targets: ['crypto-agent:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s
+
