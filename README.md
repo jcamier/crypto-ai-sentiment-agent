@@ -21,6 +21,8 @@ Before deploying, add these secrets to your GitHub repository:
 ```bash
 # AWS & Infrastructure
 AWS_ROLE_ARN=arn:aws:iam::YOUR_ACCOUNT_ID:role/GitHubActionsDeployRole
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
 EC2_HOST=your.ec2.public.ip
 EC2_USER=ubuntu
 EC2_SSH_KEY=<paste-your-private-ssh-key-content>
