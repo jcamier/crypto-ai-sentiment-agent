@@ -101,6 +101,7 @@ git push origin production
    - Build Docker image
    - Push to Amazon ECR
    - Deploy to EC2 instance
+   - **Run database migrations** (Alembic upgrade)
    - Run health checks
 
 3. **Access your deployed application:**
@@ -109,6 +110,21 @@ curl http://YOUR_EC2_IP:8000/health
 ```
 
 **Note:** Make sure all GitHub Secrets are configured (see Setup section above).
+
+### Database Migrations
+
+The deployment script automatically runs Alembic migrations. You can also run them manually:
+
+```bash
+# On EC2, run migrations manually if needed
+docker-compose exec crypto-agent alembic upgrade head
+
+# Check current migration version
+docker-compose exec crypto-agent alembic current
+
+# View migration history
+docker-compose exec crypto-agent alembic history
+```
 
 ## 📊 API Endpoints
 
