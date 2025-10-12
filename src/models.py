@@ -29,7 +29,9 @@ class NewsArticle(Base):
     created_at = Column(DateTime, default=func.now())
 
     # Embedding fields for semantic search (Day 3)
-    embedding = Column(Vector(1024))  # Titan Text Embeddings V2 generates 1024-dim vectors
+    embedding = Column(
+        Vector(1024)
+    )  # Titan Text Embeddings V2 generates 1024-dim vectors
     embedding_model = Column(String(100))  # Track which model generated the embedding
     embedding_generated_at = Column(DateTime)  # When the embedding was created
     description = Column(Text)  # Article description/summary for embedding generation
@@ -57,7 +59,9 @@ class NewsArticle(Base):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "embedding_model": self.embedding_model,
             "embedding_generated_at": (
-                self.embedding_generated_at.isoformat() if self.embedding_generated_at else None
+                self.embedding_generated_at.isoformat()
+                if self.embedding_generated_at
+                else None
             ),
             "has_embedding": self.embedding is not None,
         }

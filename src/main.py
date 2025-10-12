@@ -314,7 +314,9 @@ async def generate_embeddings_endpoint(
             return {
                 "message": "All articles already have embeddings",
                 "total_articles": db.query(func.count(NewsArticle.id)).scalar(),
-                "articles_with_embeddings": db.query(func.count(NewsArticle.id)).scalar(),
+                "articles_with_embeddings": db.query(
+                    func.count(NewsArticle.id)
+                ).scalar(),
                 "status": "completed",
             }
 
@@ -348,7 +350,9 @@ async def generate_embeddings_endpoint(
                 successful += 1
 
             except Exception as e:
-                logger.error(f"Failed to generate embedding for article {article.id}: {e}")
+                logger.error(
+                    f"Failed to generate embedding for article {article.id}: {e}"
+                )
                 db.rollback()
                 failed += 1
 
@@ -418,7 +422,9 @@ async def search_similar_articles(
     request: Request,
     api_key: str = Depends(verify_api_key),
     db: Session = Depends(get_db),
-    limit: int = Query(5, ge=1, le=20, description="Number of similar articles to return"),
+    limit: int = Query(
+        5, ge=1, le=20, description="Number of similar articles to return"
+    ),
 ):
     """
     Find articles similar to a given article using vector similarity search.
@@ -428,15 +434,19 @@ async def search_similar_articles(
     """
     try:
         # Get the source article
-        source_article = db.query(NewsArticle).filter(NewsArticle.id == article_id).first()
+        source_article = (
+            db.query(NewsArticle).filter(NewsArticle.id == article_id).first()
+        )
 
         if not source_article:
-            raise HTTPException(status_code=404, detail=f"Article {article_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"Article {article_id} not found"
+            )
 
         if source_article.embedding is None:
             raise HTTPException(
                 status_code=400,
-                detail=f"Article {article_id} does not have an embedding. Generate embeddings first."
+                detail=f"Article {article_id} does not have an embedding. Generate embeddings first.",
             )
 
         # Use pgvector's cosine distance operator (<=>)
@@ -444,7 +454,9 @@ async def search_similar_articles(
         similar_articles = (
             db.query(
                 NewsArticle,
-                NewsArticle.embedding.cosine_distance(source_article.embedding).label("distance")
+                NewsArticle.embedding.cosine_distance(source_article.embedding).label(
+                    "distance"
+                ),
             )
             .filter(NewsArticle.embedding.isnot(None))
             .filter(NewsArticle.id != article_id)  # Exclude the source article
@@ -502,14 +514,16 @@ async def search_by_query(
         if sum(query_embedding) == 0:
             raise HTTPException(
                 status_code=500,
-                detail="Failed to generate query embedding. Check AWS Bedrock credentials."
+                detail="Failed to generate query embedding. Check AWS Bedrock credentials.",
             )
 
         # Search for similar articles using pgvector
         similar_articles = (
             db.query(
                 NewsArticle,
-                NewsArticle.embedding.cosine_distance(query_embedding).label("distance")
+                NewsArticle.embedding.cosine_distance(query_embedding).label(
+                    "distance"
+                ),
             )
             .filter(NewsArticle.embedding.isnot(None))
             .order_by("distance")

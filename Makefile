@@ -118,6 +118,7 @@ lint:
 	black --check src/ tests/
 
 format:
+	ruff check src/ tests/ --fix
 	black src/ tests/
 	isort src/ tests/
 
