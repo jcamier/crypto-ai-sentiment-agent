@@ -47,13 +47,7 @@ def setup_tracing(app, engine=None):
         provider = TracerProvider(resource=resource)
 
         # Configure Jaeger exporter
-        # Extract host and port from endpoint (e.g., http://jaeger:14268/api/traces)
-        jaeger_endpoint = config(
-            "OTEL_EXPORTER_JAEGER_ENDPOINT", default="http://jaeger:14268/api/traces"
-        )
-
         # Jaeger thrift exporter uses agent host/port, not HTTP endpoint
-        # For HTTP endpoint, we need to parse it
         jaeger_exporter = JaegerExporter(
             agent_host_name="jaeger",  # Docker service name
             agent_port=6831,  # Jaeger agent port for thrift over UDP
@@ -97,4 +91,3 @@ def get_tracer(name: str = __name__):
         OpenTelemetry Tracer instance
     """
     return trace.get_tracer(name)
-

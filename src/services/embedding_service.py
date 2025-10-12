@@ -5,7 +5,6 @@ Generates vector embeddings for semantic search.
 
 import json
 import logging
-from typing import List
 
 import boto3
 from decouple import config
@@ -43,7 +42,7 @@ class EmbeddingService:
         )
         logger.info(f"EmbeddingService initialized with model: {self.model_id}")
 
-    def generate_embedding(self, text: str) -> List[float]:
+    def generate_embedding(self, text: str) -> list[float]:
         """
         Generate embedding vector for given text using Bedrock Titan V2.
 
@@ -100,7 +99,7 @@ class EmbeddingService:
             # Return zero vector as fallback
             return [0.0] * 1024
 
-    def generate_embeddings_batch(self, texts: List[str]) -> List[List[float]]:
+    def generate_embeddings_batch(self, texts: list[str]) -> list[list[float]]:
         """
         Generate embeddings for multiple texts.
 
@@ -125,4 +124,3 @@ class EmbeddingService:
                 embeddings.append([0.0] * 1024)
 
         return embeddings
-

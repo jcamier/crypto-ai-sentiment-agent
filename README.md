@@ -116,12 +116,16 @@ curl http://YOUR_EC2_IP:8000/health
 |----------|--------|-------------|
 | `/` | GET | Service information and available endpoints |
 | `/health` | GET | Health check for Docker |
+| `/metrics` | GET | Prometheus metrics (public, for scraping) |
 | `/api/news/` | GET | Get news articles with filtering |
 | `/api/sentiment/` | GET | Get sentiment analysis results |
 | `/api/stats/` | GET | Database statistics |
 | `/api/process/s3/` | POST | Process S3 PDFs |
 | `/api/fetch/live/` | POST | Fetch live news from CoinGecko |
 | `/api/analyze/sentiment/` | POST | Analyze sentiment for articles |
+| `/api/embeddings/generate/` | POST | Generate embeddings for all articles (Day 3) |
+| `/api/search/similar/{article_id}` | GET | Find similar articles using vector search (Day 3) |
+| `/api/search/query` | POST | Search articles by natural language query (Day 3) |
 
 ### Example API Usage
 
@@ -154,13 +158,27 @@ curl -X POST -H "X-API-Key: $API_KEY" http://localhost:8000/api/fetch/live/
 
 # Analyze sentiment
 curl -X POST -H "X-API-Key: $API_KEY" http://localhost:8000/api/analyze/sentiment/
+
+# Generate embeddings for all articles (Day 3)
+curl -X POST -H "X-API-Key: $API_KEY" http://localhost:8000/api/embeddings/generate/
+
+# Find similar articles (Day 3)
+curl -H "X-API-Key: $API_KEY" "http://localhost:8000/api/search/similar/1?limit=5"
+
+# Search by natural language query (Day 3)
+curl -X POST -H "X-API-Key: $API_KEY" "http://localhost:8000/api/search/query?query=Bitcoin%20price%20prediction&limit=10"
 ```
 
 ## 🏗️ Architecture
 
 - **FastAPI**: Web framework and REST API
-- **PostgreSQL + pgvector**: Database with vector support for future embeddings
-- **Amazon Bedrock**: LLM service for sentiment analysis (Claude 3 Haiku)
+- **PostgreSQL + pgvector**: Database with vector embeddings for semantic search
+- **Amazon Bedrock**:
+  - Claude 3 Haiku for sentiment analysis
+  - Titan Text Embeddings V2 for generating 1024-dim vectors
+- **Prometheus + Grafana Cloud**: Metrics collection and visualization
+- **Jaeger**: Distributed tracing and performance monitoring
+- **OpenTelemetry**: Unified observability instrumentation
 - **Docker**: Containerized deployment
 - **boto3**: AWS SDK for S3 and Bedrock integration
 - **CoinGecko API**: Live crypto news data
@@ -169,32 +187,54 @@ curl -X POST -H "X-API-Key: $API_KEY" http://localhost:8000/api/analyze/sentimen
 
 ```
 src/
-├── main.py                 # FastAPI application
-├── database.py            # Database configuration
-├── models.py              # SQLAlchemy models
+├── main.py                  # FastAPI application
+├── database.py             # Database configuration
+├── models.py               # SQLAlchemy models
+├── metrics.py              # Prometheus metrics middleware
+├── tracing.py              # OpenTelemetry tracing setup
 └── services/
-    ├── s3_processor.py    # S3 PDF processing
+    ├── s3_processor.py     # S3 PDF processing
     ├── coingecko_service.py # CoinGecko API integration
-    └── sentiment_analyzer.py # Bedrock sentiment analysis
+    ├── sentiment_analyzer.py # Bedrock sentiment analysis
+    └── embedding_service.py  # Bedrock Titan embeddings (Day 3)
+
+observability/
+├── prometheus.yml          # Prometheus config (generated from template)
+├── prometheus.yml.template # Prometheus template with Grafana Cloud
+├── grafana-api-performance-dashboard.json  # Grafana dashboard
+├── GRAFANA_DASHBOARDS.md  # Dashboard setup guide
+└── README.md              # Observability documentation
+
+alembic/
+└── versions/              # Database migrations
 ```
 
 ## 🔧 Development Commands
 
 ```bash
 # Core commands
-make help       # Show all available commands
-make build      # Build Docker images
-make up         # Start services
-make down       # Stop services
-make setup      # Initialize database
-make test       # Run tests
-make clean      # Clean up containers and volumes
+make help              # Show all available commands
+make build             # Build Docker images
+make up                # Start services
+make down              # Stop services
+make setup             # Initialize database
+make test              # Run tests
+make clean             # Clean up containers and volumes
+
+# Database migrations
+make migrate           # Run database migrations
+make migrate-create    # Create new migration
+make migrate-rollback  # Rollback last migration
+
+# Day 3 - Embeddings & Observability
+make generate-embeddings  # Generate embeddings for all articles
+make setup-prometheus     # Generate Prometheus config with Grafana Cloud credentials
 
 # Development tools
-make logs       # View logs
-make shell      # Shell into container
-make lint       # Run code linting
-make format     # Format code with black/isort
+make logs              # View logs
+make shell             # Shell into container
+make lint              # Run code linting
+make format            # Format code with black/isort
 ```
 
 ## 📋 Five-Day Bootcamp Overview

@@ -18,7 +18,8 @@ This directory contains configuration for the observability stack used in the Cr
 
 ### Grafana Cloud (Optional)
 - **Purpose**: Centralized metrics visualization and dashboards
-- **Setup**: Follow the Grafana Cloud Setup section below
+- **Setup**: Complete ✅ (See Grafana Cloud Setup section below)
+- **Dashboards**: Pre-configured dashboards available (See `GRAFANA_DASHBOARDS.md`)
 - **Free Tier**: 10K series, 50GB logs/month
 - **Benefit**: Persistent metrics storage and advanced visualization
 
@@ -99,6 +100,16 @@ rate(bedrock_api_cost_usd[1h]) * 3600
 ```
 
 ### Grafana Cloud Setup - Secure Configuration
+
+**📊 Pre-Built Dashboards Available!**
+
+We've created two production-ready Grafana dashboards for you:
+- **API Performance Dashboard** - Request rates, latency, errors, alerts
+- **Business Metrics Dashboard** - Articles, embeddings, sentiment, sources
+
+See [`GRAFANA_DASHBOARDS.md`](./GRAFANA_DASHBOARDS.md) for import instructions.
+
+---
 
 **Step 1: Get Your Grafana Cloud Credentials**
 1. Create a free account at: https://grafana.com/auth/sign-up
