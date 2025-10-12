@@ -12,7 +12,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: pgvector/pgvector:pg16  # Changed from postgres:15 to support vector operations
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres

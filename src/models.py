@@ -2,6 +2,7 @@
 SQLAlchemy models for the crypto sentiment agent.
 """
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import JSON, Column, DateTime, Float, Integer, String, Text
 from sqlalchemy.sql import func
 
@@ -27,6 +28,14 @@ class NewsArticle(Base):
     s3_key_source = Column(String(500))  # S3 key/path of the source file
     created_at = Column(DateTime, default=func.now())
 
+    # Embedding fields for semantic search (Day 3)
+    embedding = Column(
+        Vector(1024)
+    )  # Titan Text Embeddings V2 generates 1024-dim vectors
+    embedding_model = Column(String(100))  # Track which model generated the embedding
+    embedding_generated_at = Column(DateTime)  # When the embedding was created
+    description = Column(Text)  # Article description/summary for embedding generation
+
     def __repr__(self):
         return f"<NewsArticle(id={self.id}, title='{self.title[:50]}...', sentiment='{self.sentiment}')>"
 
@@ -36,6 +45,7 @@ class NewsArticle(Base):
             "id": self.id,
             "title": self.title,
             "content": self.content,
+            "description": self.description,
             "source": self.source,
             "url": self.url,
             "published_at": (
@@ -47,4 +57,11 @@ class NewsArticle(Base):
             "s3_bucket_source": self.s3_bucket_source,
             "s3_key_source": self.s3_key_source,
             "created_at": self.created_at.isoformat() if self.created_at else None,
+            "embedding_model": self.embedding_model,
+            "embedding_generated_at": (
+                self.embedding_generated_at.isoformat()
+                if self.embedding_generated_at
+                else None
+            ),
+            "has_embedding": self.embedding is not None,
         }

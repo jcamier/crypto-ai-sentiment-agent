@@ -1,41 +1,67 @@
 """
-Simple pytest configuration for the crypto sentiment agent tests.
+Pytest configuration for the crypto sentiment agent tests.
+
+Uses PostgreSQL with pgvector for tests to match production environment.
 """
 
 import os
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
 # from moto import mock_aws  # Will be enabled when moto is installed
 
-# Set test database URL and environment variables before importing the app
-os.environ["DATABASE_URL"] = "sqlite:///:memory:"
-os.environ["DB_NAME"] = "test_crypto_news"
-os.environ["DB_USER"] = "test_user"
-os.environ["DB_PASS"] = "test_pass"
+# Set test database URL
+# Use the same database as development, but we'll clean it up before/after each test
+# Read database credentials from environment (set in docker-compose.yml or GitHub Actions)
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASS = os.getenv("DB_PASS", "postgres")
+DB_NAME = os.getenv("DB_NAME", "crypto_news")
+
+# GitHub Actions provides DATABASE_URL, otherwise construct it
+# If DATABASE_URL is provided, use it (GitHub Actions: localhost, Docker: db)
+if "DATABASE_URL" in os.environ:
+    TEST_DATABASE_URL = os.environ["DATABASE_URL"]
+else:
+    # Default to Docker service name "db" when running locally
+    TEST_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASS}@db:5432/{DB_NAME}"
+
+os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+os.environ["DB_NAME"] = DB_NAME
+os.environ["DB_USER"] = DB_USER
+os.environ["DB_PASS"] = DB_PASS
 # Set required environment variables to avoid config errors
 os.environ["AWS_ACCESS_KEY_ID"] = "test_key"
 os.environ["AWS_SECRET_ACCESS_KEY"] = "test_secret"
 os.environ["COINGECKO_API_KEY"] = "test_api_key"
 os.environ["S3_BUCKET_NAME"] = "test_bucket"
 
-from src.database import Base, get_db
-from src.main import app
+from src.database import Base, get_db  # noqa: E402
+from src.main import app  # noqa: E402
 
 
 @pytest.fixture(scope="function")
 def test_db():
-    """Create a test database for each test."""
-    # Create in-memory SQLite database
-    engine = create_engine(
-        "sqlite:///:memory:",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
+    """Create a test database for each test using PostgreSQL with pgvector.
+
+    This fixture:
+    1. Creates a PostgreSQL engine (with pgvector support)
+    2. Creates all tables (including vector columns)
+    3. Provides a test session
+    4. Cleans up after each test
+    """
+    # Create PostgreSQL engine
+    engine = create_engine(TEST_DATABASE_URL, pool_pre_ping=True)
+
+    # Enable pgvector extension (if not already enabled)
+    with engine.connect() as conn:
+        conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        conn.commit()
+
+    # Drop all tables before creating (ensures clean state)
+    Base.metadata.drop_all(bind=engine)
 
     # Create all tables
     Base.metadata.create_all(bind=engine)

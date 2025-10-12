@@ -11,7 +11,13 @@ help:
 	@echo "  up           - Start all services with docker compose"
 	@echo "  down         - Stop all services"
 	@echo "  build        - Build all Docker images"
-	@echo "  setup        - Complete project setup (database + pgvector)"
+	@echo "  setup        - Complete project setup (database + migrations)"
+	@echo "  migrate      - Run database migrations"
+	@echo "  migrate-create - Create a new migration"
+	@echo "  migrate-rollback - Rollback last migration"
+	@echo "  migrate-history - Show migration history"
+	@echo "  setup-prometheus - Generate Prometheus config with Grafana Cloud credentials"
+	@echo "  generate-embeddings - Generate embeddings for all articles"
 	@echo "  test         - Run tests"
 	@echo "  clean        - Clean up containers and volumes"
 	@echo "  logs         - Show logs from all services"
@@ -36,8 +42,46 @@ build:
 	docker compose build
 
 # Complete project setup
-setup: init-db setup-pgvector
+setup: init-db migrate
 	@echo "Project setup complete!"
+
+# Run database migrations
+migrate: up
+	@echo "Running database migrations..."
+	@sleep 3
+	docker compose exec crypto-agent alembic upgrade head
+
+# Create a new migration
+migrate-create: up
+	@read -p "Enter migration name: " name; \
+	docker compose exec crypto-agent alembic revision -m "$$name"
+
+# Rollback last migration
+migrate-rollback: up
+	@echo "Rolling back last migration..."
+	docker compose exec crypto-agent alembic downgrade -1
+
+# Show migration history
+migrate-history: up
+	docker compose exec crypto-agent alembic history
+
+# Setup Prometheus with Grafana Cloud credentials (from .env)
+setup-prometheus:
+	@echo "Generating Prometheus config with Grafana Cloud credentials..."
+	@if [ ! -f .env ]; then \
+		echo "❌ Error: .env file not found"; \
+		echo "Please copy env.example to .env and add your Grafana Cloud credentials"; \
+		exit 1; \
+	fi
+	@set -a && . ./.env && set +a && \
+	if [ -z "$$GRAFANA_CLOUD_PROMETHEUS_URL" ]; then \
+		echo "❌ Error: GRAFANA_CLOUD_PROMETHEUS_URL not set in .env"; \
+		echo "Please add your Grafana Cloud credentials to .env first"; \
+		exit 1; \
+	fi && \
+	envsubst < observability/prometheus.yml.template > observability/prometheus.yml && \
+	echo "✅ Prometheus config generated with credentials from .env" && \
+	echo "⚠️  Remember: observability/prometheus.yml is gitignored and contains secrets"
 
 # Run tests (automatically starts services if needed)
 test:
@@ -52,6 +96,12 @@ test:
 clean:
 	docker compose down -v
 	docker system prune -f
+
+# Generate embeddings for all articles
+generate-embeddings: up
+	@echo "🚀 Generating embeddings for all articles..."
+	@sleep 3
+	docker compose exec crypto-agent python /app/scripts/generate_embeddings.py
 
 # Show logs
 logs:
@@ -68,6 +118,7 @@ lint:
 	black --check src/ tests/
 
 format:
+	ruff check src/ tests/ --fix
 	black src/ tests/
 	isort src/ tests/
 

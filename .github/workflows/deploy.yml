@@ -50,6 +50,10 @@ jobs:
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
+          # Grafana Cloud observability
+          GRAFANA_CLOUD_PROMETHEUS_URL: ${{ secrets.GRAFANA_CLOUD_PROMETHEUS_URL }}
+          GRAFANA_CLOUD_PROMETHEUS_USERNAME: ${{ secrets.GRAFANA_CLOUD_PROMETHEUS_USERNAME }}
+          GRAFANA_CLOUD_PROMETHEUS_PASSWORD: ${{ secrets.GRAFANA_CLOUD_PROMETHEUS_PASSWORD }}
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > ssh_key
           chmod 600 ssh_key
@@ -64,6 +68,9 @@ jobs:
             export S3_BUCKET_NAME='$S3_BUCKET_NAME'
             export COINGECKO_API_KEY='$COINGECKO_API_KEY'
             export API_KEY='$API_KEY'
+            export GRAFANA_CLOUD_PROMETHEUS_URL='$GRAFANA_CLOUD_PROMETHEUS_URL'
+            export GRAFANA_CLOUD_PROMETHEUS_USERNAME='$GRAFANA_CLOUD_PROMETHEUS_USERNAME'
+            export GRAFANA_CLOUD_PROMETHEUS_PASSWORD='$GRAFANA_CLOUD_PROMETHEUS_PASSWORD'
             chmod +x /tmp/deploy.sh
             /tmp/deploy.sh $ECR_REGISTRY/$ECR_REPOSITORY:latest
           "

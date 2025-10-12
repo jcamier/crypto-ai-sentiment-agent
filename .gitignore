@@ -61,3 +61,7 @@ Thumbs.db
 *.env
 .env.local
 .env.production
+
+# Observability (contains secrets when configured)
+observability/prometheus.yml
+setup-grafana.sh
