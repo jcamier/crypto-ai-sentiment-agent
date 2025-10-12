@@ -148,9 +148,24 @@ fi
 echo "🚀 Starting application..."
 docker-compose up -d
 
-# Wait for application to be ready
+# Wait for database to be ready
+echo "⏳ Waiting for database to be ready..."
+sleep 10
+
+# Run database migrations
+echo "🔄 Running database migrations..."
+docker-compose exec -T crypto-agent alembic upgrade head
+if [ $? -eq 0 ]; then
+    echo "✅ Database migrations completed successfully"
+else
+    echo "⚠️  Warning: Migration failed, but continuing (may be first deployment)"
+    echo "ℹ️  Checking current migration state..."
+    docker-compose exec -T crypto-agent alembic current || true
+fi
+
+# Wait for application to be fully ready
 echo "⏳ Waiting for application to be ready..."
-sleep 30
+sleep 20
 
 # Health check
 echo "🏥 Running health check..."
