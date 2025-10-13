@@ -31,6 +31,9 @@ COPY scripts/ ./scripts/
 COPY alembic/ ./alembic/
 COPY alembic.ini ./
 
+# Copy configuration files
+COPY news_sources.json ./
+
 # Set Python path to include /app so src.* imports work
 ENV PYTHONPATH=/app
 
