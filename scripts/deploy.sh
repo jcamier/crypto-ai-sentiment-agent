@@ -33,7 +33,16 @@ cd /opt/crypto-agent
 
 # Login to ECR
 echo "🔐 Logging into ECR..."
+# Temporarily unset AWS credentials to use EC2 IAM role for ECR login
+# Save them for later use by the container
+SAVED_AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+SAVED_AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(echo $IMAGE_NAME | cut -d'/' -f1)
+# Restore credentials for container environment
+export AWS_ACCESS_KEY_ID=$SAVED_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$SAVED_AWS_SECRET_ACCESS_KEY
 
 # Pull the latest image
 echo "📥 Pulling latest image..."
