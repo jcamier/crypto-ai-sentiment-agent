@@ -203,7 +203,7 @@ class GuardrailService:
             )
 
             action = response.get('action', 'NONE')
-            
+
             if action == 'GUARDRAIL_INTERVENED':
                 return {
                     'valid': False,
@@ -211,7 +211,7 @@ class GuardrailService:
                     'assessments': response.get('assessments', []),
                     'message': 'Content blocked by guardrails'
                 }
-            
+
             return {
                 'valid': True,
                 'action': action,
@@ -251,7 +251,7 @@ class GuardrailService:
             )
 
             action = response.get('action', 'NONE')
-            
+
             if action == 'GUARDRAIL_INTERVENED':
                 # Return sanitized message
                 return {
@@ -260,7 +260,7 @@ class GuardrailService:
                     'assessments': response.get('assessments', []),
                     'sanitized_output': "I cannot provide a response due to content policy restrictions."
                 }
-            
+
             return {
                 'valid': True,
                 'action': action,
@@ -287,20 +287,20 @@ class SentimentAnalyzer:
     def __init__(self):
         # ... existing initialization
         self.guardrail_service = GuardrailService()
-    
+
     def analyze_sentiment_with_guardrails(self, article_content: str) -> Dict[str, Any]:
         """
         Analyze sentiment with guardrail validation.
-        
+
         Args:
             article_content: News article text
-            
+
         Returns:
             Dict with sentiment and guardrail status
         """
         # Validate input
         input_validation = self.guardrail_service.validate_input(article_content)
-        
+
         if not input_validation['valid']:
             logger.warning(f"Input blocked by guardrails: {input_validation['message']}")
             return {
@@ -309,14 +309,14 @@ class SentimentAnalyzer:
                 'guardrail_blocked': True,
                 'reason': input_validation['message']
             }
-        
+
         # Generate sentiment with Bedrock
         sentiment_response = self.analyze_sentiment(article_content)
-        
+
         # Validate output
         output_text = json.dumps(sentiment_response)
         output_validation = self.guardrail_service.validate_output(output_text)
-        
+
         if not output_validation['valid']:
             logger.warning(f"Output blocked by guardrails")
             return {
@@ -325,7 +325,7 @@ class SentimentAnalyzer:
                 'guardrail_blocked': True,
                 'reason': 'Model output blocked by content policy'
             }
-        
+
         return {
             **sentiment_response,
             'guardrail_validated': True
@@ -428,10 +428,10 @@ class EvaluationService:
                 # Get prediction
                 result = sentiment_analyzer.analyze_sentiment(sample['text'])
                 predicted_sentiment = result.get('sentiment', 'neutral')
-                
+
                 predictions.append(predicted_sentiment)
                 expected.append(sample['expected_sentiment'])
-                
+
                 results.append({
                     'id': sample['id'],
                     'text': sample['text'][:100] + '...',
@@ -449,8 +449,8 @@ class EvaluationService:
         # Calculate metrics
         labels = ['bullish', 'neutral', 'bearish']
         precision, recall, f1, support = precision_recall_fscore_support(
-            expected, 
-            predictions, 
+            expected,
+            predictions,
             labels=labels,
             average='weighted',
             zero_division=0
@@ -459,8 +459,8 @@ class EvaluationService:
         # Per-class metrics
         per_class_precision, per_class_recall, per_class_f1, per_class_support = \
             precision_recall_fscore_support(
-                expected, 
-                predictions, 
+                expected,
+                predictions,
                 labels=labels,
                 average=None,
                 zero_division=0
@@ -510,13 +510,13 @@ async def evaluate_sentiment_model(
 ):
     """
     Evaluate sentiment analysis model against gold dataset.
-    
+
     Returns accuracy, precision, recall, F1 score, and confusion matrix.
     """
     try:
         sentiment_analyzer = SentimentAnalyzer()
         results = evaluation_service.evaluate_model(sentiment_analyzer)
-        
+
         return {
             'status': 'completed',
             'metrics': results,
@@ -553,7 +553,7 @@ def retry_with_backoff(
 ):
     """
     Decorator for retry logic with exponential backoff and jitter.
-    
+
     Args:
         max_retries: Maximum number of retry attempts
         initial_delay: Initial delay in seconds
@@ -566,33 +566,33 @@ def retry_with_backoff(
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
             retry_count = 0
-            
+
             while retry_count <= max_retries:
                 try:
                     return func(*args, **kwargs)
                 except exceptions as e:
                     retry_count += 1
-                    
+
                     if retry_count > max_retries:
                         logger.error(f"Max retries ({max_retries}) exceeded for {func.__name__}")
                         raise
-                    
+
                     # Calculate delay with exponential backoff
                     delay = min(initial_delay * (exponential_base ** (retry_count - 1)), max_delay)
-                    
+
                     # Add jitter
                     if jitter:
                         delay = delay * (0.5 + random.random())
-                    
+
                     logger.warning(
                         f"Retry {retry_count}/{max_retries} for {func.__name__} "
                         f"after {delay:.2f}s. Error: {e}"
                     )
-                    
+
                     time.sleep(delay)
-            
+
             return None
-        
+
         return wrapper
     return decorator
 
@@ -638,10 +638,10 @@ class CircuitState(Enum):
 class CircuitBreaker:
     """
     Circuit breaker pattern implementation.
-    
+
     Prevents cascading failures by stopping requests to failing services.
     """
-    
+
     def __init__(
         self,
         failure_threshold: int = 5,
@@ -651,14 +651,14 @@ class CircuitBreaker:
         self.failure_threshold = failure_threshold
         self.recovery_timeout = recovery_timeout
         self.expected_exception = expected_exception
-        
+
         self.failure_count = 0
         self.last_failure_time = None
         self.state = CircuitState.CLOSED
-    
+
     def call(self, func: Callable, *args, **kwargs) -> Any:
         """Execute function with circuit breaker protection."""
-        
+
         if self.state == CircuitState.OPEN:
             if self._should_attempt_reset():
                 self.state = CircuitState.HALF_OPEN
@@ -668,7 +668,7 @@ class CircuitBreaker:
                     f"Circuit breaker OPEN for {func.__name__}. "
                     f"Will retry after {self.recovery_timeout}s"
                 )
-        
+
         try:
             result = func(*args, **kwargs)
             self._on_success()
@@ -676,26 +676,26 @@ class CircuitBreaker:
         except self.expected_exception as e:
             self._on_failure()
             raise
-    
+
     def _should_attempt_reset(self) -> bool:
         """Check if enough time has passed to attempt reset."""
         return (
             self.last_failure_time is not None and
             time.time() - self.last_failure_time >= self.recovery_timeout
         )
-    
+
     def _on_success(self):
         """Handle successful call."""
         self.failure_count = 0
         if self.state == CircuitState.HALF_OPEN:
             self.state = CircuitState.CLOSED
             logger.info("Circuit breaker reset to CLOSED state")
-    
+
     def _on_failure(self):
         """Handle failed call."""
         self.failure_count += 1
         self.last_failure_time = time.time()
-        
+
         if self.failure_count >= self.failure_threshold:
             self.state = CircuitState.OPEN
             logger.error(
@@ -711,7 +711,7 @@ def circuit_breaker(
 ):
     """Circuit breaker decorator."""
     breaker = CircuitBreaker(failure_threshold, recovery_timeout, expected_exception)
-    
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
@@ -743,19 +743,19 @@ from src.utils.circuit_breaker import circuit_breaker
 class SentimentAnalyzer:
     def __init__(self):
         self.bedrock_client = boto3.client('bedrock-runtime', region_name='us-east-1')
-        
+
         # Primary model (Claude Sonnet - more accurate)
         self.primary_model_id = config(
             'BEDROCK_PRIMARY_MODEL_ID',
             default='anthropic.claude-3-sonnet-20240229-v1:0'
         )
-        
+
         # Fallback model (Claude Haiku - faster/cheaper)
         self.fallback_model_id = config(
             'BEDROCK_FALLBACK_MODEL_ID',
             default='anthropic.claude-3-haiku-20240307-v1:0'
         )
-        
+
         self.use_fallback = False
 
     @retry_with_backoff(max_retries=3)
@@ -763,43 +763,43 @@ class SentimentAnalyzer:
     def analyze_sentiment_with_fallback(self, article_content: str) -> Dict[str, Any]:
         """
         Analyze sentiment with automatic fallback to cheaper model.
-        
+
         Args:
             article_content: News article text
-            
+
         Returns:
             Dict with sentiment analysis results
         """
         model_id = self.fallback_model_id if self.use_fallback else self.primary_model_id
-        
+
         try:
             result = self._invoke_bedrock(article_content, model_id)
-            
+
             # Reset fallback flag on success with primary model
             if not self.use_fallback:
                 self.use_fallback = False
-                
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Primary model ({model_id}) failed: {e}")
-            
+
             # Try fallback model if primary fails
             if not self.use_fallback:
                 logger.info(f"Attempting fallback to {self.fallback_model_id}")
                 self.use_fallback = True
                 return self._invoke_bedrock(article_content, self.fallback_model_id)
-            
+
             raise
 
     def _invoke_bedrock(self, content: str, model_id: str) -> Dict[str, Any]:
         """Invoke Bedrock model for sentiment analysis."""
-        prompt = f"""Analyze the sentiment of this crypto news article. 
+        prompt = f"""Analyze the sentiment of this crypto news article.
         Respond with JSON: {{"sentiment": "bullish|neutral|bearish", "confidence": 0.0-1.0}}
-        
+
         Article: {content}
         """
-        
+
         response = self.bedrock_client.invoke_model(
             modelId=model_id,
             body=json.dumps({
@@ -809,13 +809,13 @@ class SentimentAnalyzer:
                 "temperature": 0.3
             })
         )
-        
+
         result = json.loads(response['body'].read())
         content_text = result['content'][0]['text']
-        
+
         # Parse JSON response
         sentiment_data = json.loads(content_text)
-        
+
         return {
             'sentiment': sentiment_data['sentiment'],
             'confidence_score': sentiment_data['confidence'],
@@ -853,7 +853,7 @@ BEDROCK_PRICING = {
 
 class CostTracker:
     """Track and monitor Bedrock API costs."""
-    
+
     @staticmethod
     def calculate_sentiment_cost(
         input_tokens: int,
@@ -862,37 +862,37 @@ class CostTracker:
     ) -> float:
         """Calculate cost for sentiment analysis call."""
         pricing = BEDROCK_PRICING.get(model_id, {})
-        
+
         input_cost = (input_tokens / 1000) * pricing.get('input_per_1k_tokens', 0)
         output_cost = (output_tokens / 1000) * pricing.get('output_per_1k_tokens', 0)
-        
+
         return input_cost + output_cost
-    
+
     @staticmethod
     def calculate_embedding_cost(tokens: int, model_id: str) -> float:
         """Calculate cost for embedding generation."""
         pricing = BEDROCK_PRICING.get(model_id, {})
         return (tokens / 1000) * pricing.get('per_1k_tokens', 0)
-    
+
     @staticmethod
     def get_daily_costs(db: Session, days: int = 7) -> List[Dict[str, Any]]:
         """
         Get daily cost breakdown for the last N days.
-        
+
         Args:
             db: Database session
             days: Number of days to retrieve
-            
+
         Returns:
             List of daily cost summaries
         """
         # This requires a cost_tracking table (implement as needed)
         # For now, return estimated costs based on API calls
-        
+
         # Query API call logs (you'll need to implement this table)
         # Example structure:
         daily_costs = []
-        
+
         for i in range(days):
             date = datetime.now() - timedelta(days=i)
             daily_costs.append({
@@ -902,7 +902,7 @@ class CostTracker:
                 'estimated_cost': 0.0,  # Calculate from counts
                 'model_breakdown': {}
             })
-        
+
         return daily_costs
 ```
 
@@ -920,15 +920,15 @@ async def get_cost_monitoring(
 ):
     """
     Get Bedrock API cost monitoring data.
-    
+
     Returns daily cost breakdown and usage statistics.
     """
     try:
         cost_tracker = CostTracker()
         daily_costs = cost_tracker.get_daily_costs(db, days=days)
-        
+
         total_cost = sum(day['estimated_cost'] for day in daily_costs)
-        
+
         return {
             'period_days': days,
             'total_estimated_cost': round(total_cost, 4),
@@ -964,7 +964,7 @@ def test_retry_logic_success_after_failure():
         ClientError({'Error': {'Code': 'ThrottlingException'}}, 'InvokeModel'),
         {'body': MagicMock(read=lambda: '{"content": [{"text": "{\\"sentiment\\": \\"bullish\\", \\"confidence\\": 0.8}"}]}')}
     ]
-    
+
     # Test that retry succeeds
     # ... implementation
 
@@ -1009,7 +1009,7 @@ def test_evaluation_metrics_calculation():
 BEDROCK_GUARDRAIL_ID=your-guardrail-id
 BEDROCK_GUARDRAIL_VERSION=DRAFT
 
-# Multi-Model Configuration  
+# Multi-Model Configuration
 BEDROCK_PRIMARY_MODEL_ID=anthropic.claude-3-sonnet-20240229-v1:0
 BEDROCK_FALLBACK_MODEL_ID=anthropic.claude-3-haiku-20240307-v1:0
 
