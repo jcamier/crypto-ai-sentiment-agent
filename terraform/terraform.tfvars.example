@@ -1,15 +1,63 @@
 # terraform/terraform.tfvars.example
 # Copy this to terraform.tfvars and fill in your values
+#
+# Usage:
+#   cp terraform.tfvars.example terraform.tfvars
+#   # Edit terraform.tfvars with your values
+#   terraform init
+#   terraform plan
+#   terraform apply
 
-# Your AWS region
+# ============================================================================
+# Required Variables
+# ============================================================================
+
+# Your AWS region (us-east-1 recommended for Bedrock availability)
 aws_region = "us-east-1"
 
-# Your EC2 Key Pair name (optional - leave empty if you don't have one)
-key_pair_name = ""
+# Your EC2 Key Pair name (REQUIRED - create one in AWS Console first)
+# Go to: EC2 Console → Key Pairs → Create Key Pair
+key_pair_name = "your-key-pair-name"
 
-# Additional IPs for SSH access (for traveling)
+# Your GitHub repository in format "username/repo-name" (REQUIRED for OIDC)
+# Example: "jcamier/crypto-ai-sentiment-agent"
+github_repo = "username/repo-name"
+
+# ============================================================================
+# Optional Variables
+# ============================================================================
+
+# Project name (used for resource naming)
+project_name = "crypto-agent"
+
+# Environment (dev, staging, production)
+environment = "production"
+
+# Additional IPs for SSH access (for traveling, team members, VPN)
+# Current IP is automatically detected and added
 additional_ssh_ips = [
-  # "YOUR_HOME_IP/32",
-  # "YOUR_OFFICE_IP/32",
-  # "YOUR_VPN_IP/32"
+  # "203.0.113.0/32",  # Example: Home IP
+  # "198.51.100.0/32", # Example: Office IP
+  # "192.0.2.0/32",    # Example: VPN IP
 ]
+
+# Enable NAT Gateway for private subnets (increases cost ~$30/month)
+enable_nat_gateway = false
+
+# ============================================================================
+# Notes
+# ============================================================================
+
+# After terraform apply, you'll get outputs including:
+# - instance_public_ip: Use this for SSH and API access
+# - github_actions_role_arn: Add this to GitHub Secrets as AWS_ROLE_ARN
+# - ecr_repository_url: Your Docker image registry
+# - application_url: http://YOUR_IP:8000
+# - health_check_url: http://YOUR_IP:8000/health
+# - ssh_command: Full SSH command to connect
+#
+# Add these to GitHub Secrets:
+# - AWS_ROLE_ARN: (from github_actions_role_arn output)
+# - EC2_HOST: (from instance_public_ip output)
+# - EC2_USER: ubuntu
+# - EC2_SSH_KEY: (contents of your .pem file)
